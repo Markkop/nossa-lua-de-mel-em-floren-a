@@ -18,15 +18,15 @@ const App: React.FC = () => {
             alt="Firenze Skyline"
             className="w-full h-full object-cover brightness-[0.85]"
             style={{
-              maskImage: 'linear-gradient(to bottom, black 0%, black 95%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 95%, transparent 100%)'
+              maskImage: 'linear-gradient(to bottom, black 0%, black 90%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 90%, transparent 100%)'
             }}
           />
           {/* Warmer overlay gradient */}
           <div className="absolute inset-0 bg-gradient-to-b from-[#3d2b1f]/40 via-transparent via-60% to-[#fdfbf7]" />
           <div className="absolute inset-0 bg-black/10" />
           {/* Extra smooth bottom fade */}
-          <div className="absolute bottom-0 left-0 right-0 h-[15dvh] bg-gradient-to-t from-[#fdfbf7] via-[#fdfbf7]/60 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 h-[5dvh] bg-gradient-to-t from-[#fdfbf7] via-[#fdfbf7]/60 to-transparent" />
         </div>
         
         <div className="relative z-10 max-w-4xl animate-fadeIn">
