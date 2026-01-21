@@ -17,10 +17,16 @@ const App: React.FC = () => {
             src="https://images.unsplash.com/photo-1543429257-3eb0b65d9c58?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
             alt="Firenze Skyline"
             className="w-full h-full object-cover brightness-[0.85]"
+            style={{
+              maskImage: 'linear-gradient(to bottom, black 0%, black 95%, transparent 100%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 95%, transparent 100%)'
+            }}
           />
           {/* Warmer overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#3d2b1f]/40 via-transparent to-[#fdfbf7]" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#3d2b1f]/40 via-transparent via-60% to-[#fdfbf7]" />
           <div className="absolute inset-0 bg-black/10" />
+          {/* Extra smooth bottom fade */}
+          <div className="absolute bottom-0 left-0 right-0 h-[15dvh] bg-gradient-to-t from-[#fdfbf7] via-[#fdfbf7]/60 to-transparent" />
         </div>
         
         <div className="relative z-10 max-w-4xl animate-fadeIn">
