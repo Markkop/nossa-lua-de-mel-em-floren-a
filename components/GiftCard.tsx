@@ -1,0 +1,42 @@
+
+import React from 'react';
+import { GiftOption } from '../types';
+
+interface GiftCardProps {
+  gift: GiftOption;
+  onSelect: (gift: GiftOption) => void;
+}
+
+const GiftCard: React.FC<GiftCardProps> = ({ gift, onSelect }) => {
+  return (
+    <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-[#f0e6da] flex flex-col h-full transform hover:-translate-y-2">
+      <div className="relative h-64 overflow-hidden">
+        <img 
+          src={gift.imageUrl} 
+          alt={gift.title}
+          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-1 rounded-full shadow-sm">
+          <span className="text-[#8b5e3c] font-bold">R$ {gift.amount},00</span>
+        </div>
+      </div>
+      
+      <div className="p-8 flex-grow flex flex-col justify-between">
+        <div>
+          <h3 className="text-2xl font-serif text-[#3d2b1f] mb-3 group-hover:text-[#8b5e3c] transition-colors">{gift.title}</h3>
+          <p className="text-gray-600 leading-relaxed text-sm mb-6">{gift.description}</p>
+        </div>
+        
+        <button 
+          onClick={() => onSelect(gift)}
+          className="w-full py-4 bg-[#fdfbf7] border-2 border-[#8b5e3c] text-[#8b5e3c] font-bold rounded-xl hover:bg-[#8b5e3c] hover:text-white transition-all duration-300 active:scale-95"
+        >
+          Presentear com este momento
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default GiftCard;
