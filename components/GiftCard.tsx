@@ -5,11 +5,15 @@ import { GiftOption } from '../types';
 interface GiftCardProps {
   gift: GiftOption;
   onSelect: (gift: GiftOption) => void;
+  onSelectGallery: (gift: GiftOption) => void;
 }
 
-const GiftCard: React.FC<GiftCardProps> = ({ gift, onSelect }) => {
+const GiftCard: React.FC<GiftCardProps> = ({ gift, onSelect, onSelectGallery }) => {
   return (
-    <div className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-[#f0e6da] flex flex-col h-full transform hover:-translate-y-2">
+    <div 
+      onClick={() => onSelectGallery(gift)}
+      className="group bg-white rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-500 border border-[#f0e6da] flex flex-col h-full transform hover:-translate-y-2 cursor-pointer"
+    >
       <div className="relative h-64 overflow-hidden">
         <img 
           src={gift.imageUrl} 
@@ -18,7 +22,7 @@ const GiftCard: React.FC<GiftCardProps> = ({ gift, onSelect }) => {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-1 rounded-full shadow-sm">
-          <span className="text-[#8b5e3c] font-bold">R$ {gift.amount},00</span>
+          <span className="text-[#8b5e3c] font-bold">R$ {gift.amount.toLocaleString('pt-BR')},00</span>
         </div>
       </div>
       
@@ -29,7 +33,10 @@ const GiftCard: React.FC<GiftCardProps> = ({ gift, onSelect }) => {
         </div>
         
         <button 
-          onClick={() => onSelect(gift)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect(gift);
+          }}
           className="w-full py-4 bg-[#fdfbf7] border-2 border-[#8b5e3c] text-[#8b5e3c] font-bold rounded-xl hover:bg-[#8b5e3c] hover:text-white transition-all duration-300 active:scale-95"
         >
           Presentear com este momento

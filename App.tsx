@@ -4,9 +4,11 @@ import { GIFT_OPTIONS } from './constants';
 import { GiftOption } from './types';
 import GiftCard from './components/GiftCard';
 import PixModal from './components/PixModal';
+import GalleryModal from './components/GalleryModal';
 
 const App: React.FC = () => {
   const [selectedGift, setSelectedGift] = useState<GiftOption | null>(null);
+  const [galleryGift, setGalleryGift] = useState<GiftOption | null>(null);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -67,6 +69,7 @@ const App: React.FC = () => {
               key={gift.id} 
               gift={gift} 
               onSelect={(g) => setSelectedGift(g)} 
+              onSelectGallery={(g) => setGalleryGift(g)}
             />
           ))}
         </div>
@@ -88,11 +91,18 @@ const App: React.FC = () => {
         </div>
       </footer>
 
-      {/* Modal */}
+      {/* Modals */}
       {selectedGift && (
         <PixModal 
           gift={selectedGift} 
           onClose={() => setSelectedGift(null)} 
+        />
+      )}
+      {galleryGift && (
+        <GalleryModal 
+          allGifts={GIFT_OPTIONS}
+          startingGiftIndex={GIFT_OPTIONS.findIndex(g => g.id === galleryGift.id)}
+          onClose={() => setGalleryGift(null)} 
         />
       )}
     </div>
