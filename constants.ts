@@ -42,8 +42,6 @@ export const GIFT_OPTIONS: GiftOption[] = [
     title: "Noite de Gala com Vista para o Duomo",
     description: "Uma estadia inesquecível em um hotel boutique com a cúpula de Brunelleschi em nossa janela.",
     amount: 2000,
-    imageUrl: "https://images.unsplash.com/photo-1541085311199-a0eBB21c40f1?auto=format&fit=crop&q=80&w=800"
+    imageUrl: "https://plus.unsplash.com/premium_photo-1661962743075-4f3df12cda88?q=80&w=2746&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
   }
 ];
-
-export const PIX_KEY = "casamento-florenca@pix.com.br";

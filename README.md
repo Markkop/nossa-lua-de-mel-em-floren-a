@@ -1,20 +1,13 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# Nossa Lua de Mel 
 
-# Run and deploy your AI Studio app
+Uma lista de presentes online para lua de mel, onde convidados podem escolher experiências especiais e contribuir via PIX.
 
-This contains everything you need to run your app locally.
+## Sobre 
 
-View your app in AI Studio: https://ai.studio/apps/drive/1QoFHO9zLnjLgzIoMpZp8rgeKUadgW2Ui
+Site elegante e responsivo com 6 opções de presentes para uma lua de mel. Cada presente inclui uma descrição romântica e permite pagamento via código PIX "Copia e Cola".
 
-## Run Locally
+## Personalização
 
-**Prerequisites:**  Node.js
+Para personalizar os presentes, edite `constants.ts`. Para alterar os nomes do casal, edite `App.tsx` na seção do footer.
 
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Os códigos PIX são configurados no arquivo `.env.local` usando as variáveis de ambiente definidas em `.env.example`.

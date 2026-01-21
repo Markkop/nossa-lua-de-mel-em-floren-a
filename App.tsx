@@ -14,7 +14,7 @@ const App: React.FC = () => {
       <header className="relative h-[80vh] flex items-center justify-center text-center px-4 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <img 
-            src="https://images.unsplash.com/photo-1534239691903-1c2152771239?auto=format&fit=crop&q=80&w=2000" 
+            src="https://images.unsplash.com/photo-1543429257-3eb0b65d9c58?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
             alt="Firenze Skyline"
             className="w-full h-full object-cover brightness-[0.85]"
           />
@@ -27,7 +27,7 @@ const App: React.FC = () => {
           <div className="mb-6 inline-block bg-[#8b5e3c]/30 backdrop-blur-md px-6 py-2 rounded-full border border-white/40">
             <span className="text-white font-bold tracking-[0.2em] text-[10px] uppercase">Florença • Itália</span>
           </div>
-          <h1 className="text-6xl md:text-9xl font-serif text-white mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
+          <h1 className="text-5xl md:text-8xl font-serif text-white mb-6 drop-shadow-[0_4px_12px_rgba(0,0,0,0.3)]">
             Firenze, Amore Mio
           </h1>
           <p className="text-xl md:text-3xl text-white font-light italic max-w-2xl mx-auto drop-shadow-[0_2px_8px_rgba(0,0,0,0.4)]">
@@ -70,7 +70,7 @@ const App: React.FC = () => {
       <footer className="bg-[#3d2b1f] text-white py-24 px-4 text-center">
         <div className="max-w-2xl mx-auto">
           <h3 className="text-2xl font-serif mb-6 italic opacity-80">Com carinho,</h3>
-          <p className="text-6xl md:text-7xl font-serif mb-10 text-[#e6d5c3]">Julia & Roberto</p>
+          <p className="text-6xl md:text-7xl font-serif mb-10 text-[#e6d5c3]">Yosha & Mark</p>
           <div className="flex justify-center gap-6 mb-12 opacity-40">
             <span className="w-16 h-[1px] bg-white self-center"></span>
             <span className="text-[10px] uppercase tracking-[0.4em]">Grazie Mille</span>
