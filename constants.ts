@@ -7,7 +7,7 @@ export const GIFT_OPTIONS: GiftOption[] = [
     title: "Gelatos na Ponte Vecchio",
     description: "Um momento doce e refrescante em Florença.",
     amount: 50,
-    imageUrl: "https://images.unsplash.com/photo-1501446529957-6226bd447c46?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "https://plus.unsplash.com/premium_photo-1661963277538-195c9d6b698b?q=80&w=2703&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gallery: [
       {
         imageUrl: "https://images.unsplash.com/photo-1722141230743-f691370fdb01?q=80&w=2075&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
