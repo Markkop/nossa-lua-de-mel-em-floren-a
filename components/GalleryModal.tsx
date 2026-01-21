@@ -106,11 +106,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             className="relative animate-fadeIn"
           >
             {/* Cinematic image container */}
-            <div className="relative aspect-[21/9] md:aspect-[21/9] aspect-[16/9] rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative aspect-[3/4] md:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl max-h-[70vh] md:max-h-none">
               <img 
                 src={currentGift.gallery[currentSlideIndex].imageUrl} 
                 alt={`${currentGift.title}`}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
               {/* Gradient overlay for depth */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
@@ -118,7 +118,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             
             {/* Caption - positioned below the image */}
             <div className="mt-8 text-center px-4">
-              <p className="text-white text-lg md:text-xl font-serif italic font-light leading-relaxed max-w-2xl mx-auto">
+              <p className="text-white text-2xl md:text-xl font-serif italic font-light leading-relaxed max-w-2xl mx-auto">
                 {currentGift.gallery[currentSlideIndex].caption}
               </p>
             </div>
