@@ -106,7 +106,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             className="relative animate-fadeIn"
           >
             {/* Cinematic image container */}
-            <div className="relative aspect-[3/4] md:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl max-h-[70vh] md:max-h-none">
+            <div className="relative aspect-[3/4] portrait:aspect-[3/4] landscape:md:aspect-[21/9] rounded-2xl overflow-hidden shadow-2xl max-h-[70vh] portrait:max-h-[65vh] landscape:md:max-h-none mx-auto">
               <img 
                 src={currentGift.gallery[currentSlideIndex].imageUrl} 
                 alt={`${currentGift.title}`}
@@ -120,6 +120,9 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             <div className="mt-8 text-center px-4">
               <p className="text-white text-2xl md:text-xl font-serif italic font-light leading-relaxed max-w-2xl mx-auto">
                 {currentGift.gallery[currentSlideIndex].caption}
+                {currentGift.gallery[currentSlideIndex].emoji && (
+                  <span className="not-italic ml-2">{currentGift.gallery[currentSlideIndex].emoji}</span>
+                )}
               </p>
             </div>
           </div>

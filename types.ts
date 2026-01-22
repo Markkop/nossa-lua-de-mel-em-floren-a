@@ -2,6 +2,7 @@
 export interface GalleryItem {
   imageUrl: string;
   caption: string;
+  emoji?: string;
 }
 
 export interface GiftOption {
