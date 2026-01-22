@@ -31,20 +31,20 @@ export const GIFT_OPTIONS: GiftOption[] = [
     title: "Entrada para o Jardim de Boboli",
     description: "Um passeio romântico pelos jardins renascentistas repletos de esculturas e fontes.",
     amount: 100,
-    imageUrl: "https://images.unsplash.com/photo-1528114039593-4366cc08227d?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "https://images.unsplash.com/photo-1713183236640-cddc3a9e96dd?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gallery: [
       {
-        imageUrl: "https://images.unsplash.com/photo-1541370976299-4d24ebbc9077?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1683634059556-0116c3f28d82?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Vamos subir as colinas atrás do Palácio Pitti para conhecer os jardins mais famosos da cidade.",
         emoji: "🏛️"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1592906209472-a36b1f3782ef?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1656172831643-ce6cefc0ed8b?q=80&w=1598&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Vamos caminhar entre as estátuas e labirintos. É aqui que você entra: seu presente garante nossa entrada nesse refúgio verde.",
         emoji: "🌳"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1543429257-3eb0b65d9c58?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1587250692642-7239fefcda22?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Depois é só relaxar na grama e curtir o silêncio e a paz desse lugar histórico.",
         emoji: "💕"
       }
@@ -55,20 +55,20 @@ export const GIFT_OPTIONS: GiftOption[] = [
     title: "Jantar em uma Trattoria Típica",
     description: "Uma autêntica experiência gastronômica toscana com massas frescas e muito carinho.",
     amount: 250,
-    imageUrl: "https://images.unsplash.com/photo-1559339352-11d035aa65de?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "https://images.unsplash.com/photo-1625300064269-637cf8bf6ed0?q=80&w=1473&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gallery: [
       {
-        imageUrl: "https://images.unsplash.com/photo-1523906834658-6e24ef2386f9?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1497397854478-0ec8e14e8096?q=80&w=1632&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Quando a noite cair, vamos procurar uma daquelas portinhas charmosas escondidas nas ruelas.",
         emoji: "🚪"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1574969903809-3f7a1668ceb0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Hora de pedir uma massa fresca e um vinho. É aqui que você entra: seu presente paga esse banquete toscano pra gente!",
         emoji: "🍝"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1642487593848-8812c1c08a50?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Sairemos de lá felizes e prontos para uma caminhada romântica sob a luz da lua.",
         emoji: "🌙"
       }
@@ -79,20 +79,20 @@ export const GIFT_OPTIONS: GiftOption[] = [
     title: "Passeio de Barco no Rio Arno",
     description: "Ver o pôr do sol sob as pontes de Florença navegando suavemente pelo rio.",
     amount: 500,
-    imageUrl: "https://images.unsplash.com/photo-1541336032412-2048a678540d?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "https://images.unsplash.com/photo-1566209836870-ad84bf612155?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gallery: [
       {
-        imageUrl: "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1639735494408-b70aae46e676?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Vamos descer até as margens do rio para encontrar o barco tradicional que faz o passeio pelas pontes.",
         emoji: "🌊"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1534445867742-43195f401b6c?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1639735496037-45187df855d0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Navegaremos devagar passando por baixo da Ponte Vecchio. É aqui que você entra: seu presente reserva nosso lugar!",
         emoji: "🚣"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1476362555312-ab9e108a0b7e?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1633529974768-0f501fbd510a?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "A vista da cidade das águas é outra coisa, um momento perfeito pra guardar na memória.",
         emoji: "🥰"
       }
@@ -103,15 +103,15 @@ export const GIFT_OPTIONS: GiftOption[] = [
     title: "Tour de Vinhos em Chianti",
     description: "Um dia inteiro explorando as colinas da Toscana e degustando os melhores vinhos da região.",
     amount: 1000,
-    imageUrl: "https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?auto=format&fit=crop&q=80&w=800",
+    imageUrl: "https://images.unsplash.com/photo-1760372055346-6eeb72076946?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gallery: [
       {
-        imageUrl: "https://images.unsplash.com/photo-1523531294919-4bcd7c65e216?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1715270760965-e75c9ff7c92f?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Pegaremos a estrada rumo às colinas carregadas de parreiras que ficam logo ali ao lado de Florença.",
         emoji: "🍇"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1732294888497-dfdd2379fefa?q=80&w=1476&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Vamos visitar uma vinícola familiar. É aqui que você entra: seu presente banca nossa degustação completa e queijos locais!",
         emoji: "🍷"
       },
@@ -130,12 +130,12 @@ export const GIFT_OPTIONS: GiftOption[] = [
     imageUrl: "https://plus.unsplash.com/premium_photo-1661962743075-4f3df12cda88?q=80&w=2746&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gallery: [
       {
-        imageUrl: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1738424444969-b72d607be4b2?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Depois de tanto bater perna, tudo o que queremos é chegar num lugar confortável e abrir a cortina.",
         emoji: "😌"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1490750967868-88aa4486c946?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1735273615046-7edfbedf2af1?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Imagine abrir a janela e dar de cara com o Duomo. É aqui que você entra: seu presente ajuda a gente com essa estadia especial!",
         emoji: "🏨"
       },
