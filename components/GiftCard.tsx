@@ -39,7 +39,7 @@ const GiftCard: React.FC<GiftCardProps> = ({ gift, onSelect, onSelectGallery }) 
           }}
           className="w-full py-4 bg-[#fdfbf7] border-2 border-[#8b5e3c] text-[#8b5e3c] font-bold rounded-xl hover:bg-[#8b5e3c] hover:text-white transition-all duration-300 active:scale-95"
         >
-          Presentear com este momento
+          Contribuir para esse momento
         </button>
       </div>
     </div>

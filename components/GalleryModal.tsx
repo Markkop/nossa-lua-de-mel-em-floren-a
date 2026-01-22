@@ -144,7 +144,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
                 Grazie Mille
               </h3>
               <p className="text-white/60 mb-8 italic text-lg font-light">
-                Seu presente vai tornar esse momento ainda mais especial.
+                Este presente é simbólico. Todo o valor arrecadado contribuirá com a nossa lua de mel.
               </p>
               
               {/* QR Code container */}
@@ -168,9 +168,6 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
 
               {/* Gift info */}
               <div className="mb-6">
-                <div className="text-white/30 text-[10px] font-bold tracking-[0.3em] uppercase mb-1">
-                  {currentGift.title}
-                </div>
                 <div className="text-2xl font-bold text-white">
                   R$ {currentGift.amount.toLocaleString('pt-BR')},00
                 </div>
