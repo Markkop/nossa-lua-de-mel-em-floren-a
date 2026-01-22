@@ -16,7 +16,7 @@ export const GIFT_OPTIONS: GiftOption[] = [
       },
       {
         imageUrl: "https://plus.unsplash.com/premium_photo-1683147864503-e96f9b30db56?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        caption: "Vamos até uma boa gelataria e pedir um para cada. É aqui que você entra: seu presente vai bancar eles pra gente! <3",
+        caption: "Vamos até uma boa gelataria e pedir um para cada. Sua contribuição faz parte desse momento doce! <3",
         emoji: "🍦"
       },
       {
@@ -40,7 +40,7 @@ export const GIFT_OPTIONS: GiftOption[] = [
       },
       {
         imageUrl: "https://images.unsplash.com/photo-1587250692642-7239fefcda22?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        caption: "Vamos caminhar entre as estátuas e labirintos. É aqui que você entra: seu presente garante nossa entrada nesse refúgio verde.",
+        caption: "Vamos caminhar entre as estátuas e labirintos. Sua contribuição nos ajuda a conhecer esse refúgio verde.",
         emoji: "🌳"
       },
       {
@@ -64,7 +64,7 @@ export const GIFT_OPTIONS: GiftOption[] = [
       },
       {
         imageUrl: "https://images.unsplash.com/photo-1574969903809-3f7a1668ceb0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        caption: "Hora de pedir uma massa fresca e um vinho. É aqui que você entra: seu presente paga esse banquete toscano pra gente!",
+        caption: "Hora de pedir uma massa fresca e um vinho. Sua contribuição faz parte desse banquete toscano!",
         emoji: "🍝"
       },
       {
@@ -88,7 +88,7 @@ export const GIFT_OPTIONS: GiftOption[] = [
       },
       {
         imageUrl: "https://images.unsplash.com/photo-1639735496037-45187df855d0?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        caption: "Navegaremos devagar passando por baixo da Ponte Vecchio. É aqui que você entra: seu presente reserva nosso lugar!",
+        caption: "Navegaremos devagar passando por baixo da Ponte Vecchio. Sua contribuição torna esse passeio possível!",
         emoji: "🚣"
       },
       {
@@ -112,7 +112,7 @@ export const GIFT_OPTIONS: GiftOption[] = [
       },
       {
         imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&q=80&w=1200",
-        caption: "Vamos visitar uma vinícola familiar. É aqui que você entra: seu presente banca nossa degustação completa e queijos locais!",
+        caption: "Vamos visitar uma vinícola familiar. Sua contribuição faz parte dessa experiência com degustação e queijos locais!",
         emoji: "🍷"
       },
       {
@@ -136,7 +136,7 @@ export const GIFT_OPTIONS: GiftOption[] = [
       },
       {
         imageUrl: "https://images.unsplash.com/photo-1609534104699-203fe3de45e1?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-        caption: "Imagine abrir a janela e dar de cara com o Duomo. É aqui que você entra: seu presente ajuda a gente com essa estadia especial!",
+        caption: "Imagine abrir a janela e dar de cara com o Duomo. Sua contribuição nos ajuda a realizar essa estadia especial!",
         emoji: "🏨"
       },
       {
