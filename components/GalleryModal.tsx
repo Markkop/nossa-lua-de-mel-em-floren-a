@@ -144,7 +144,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
                 Grazie Mille
               </h3>
               <p className="text-white/60 mb-8 italic text-lg font-light">
-                Este presente é simbólico. Todo o valor arrecadado contribuirá com a nossa lua de mel.
+                Todo o valor arrecadado contribuirá com a nossa lua de mel.
               </p>
               
               {/* QR Code container */}
