@@ -39,12 +39,12 @@ export const GIFT_OPTIONS: GiftOption[] = [
         emoji: "🏛️"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1656172831643-ce6cefc0ed8b?q=80&w=1598&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl: "https://images.unsplash.com/photo-1587250692642-7239fefcda22?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Vamos caminhar entre as estátuas e labirintos. É aqui que você entra: seu presente garante nossa entrada nesse refúgio verde.",
         emoji: "🌳"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1587250692642-7239fefcda22?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl: "https://images.unsplash.com/photo-1527353574138-c0324b9b66c8?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Depois é só relaxar na grama e curtir o silêncio e a paz desse lugar histórico.",
         emoji: "💕"
       }
@@ -111,12 +111,12 @@ export const GIFT_OPTIONS: GiftOption[] = [
         emoji: "🍇"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1732294888497-dfdd2379fefa?q=80&w=1476&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl: "https://images.unsplash.com/photo-1506377247377-2a5b3b417ebb?auto=format&fit=crop&q=80&w=1200",
         caption: "Vamos visitar uma vinícola familiar. É aqui que você entra: seu presente banca nossa degustação completa e queijos locais!",
         emoji: "🍷"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1504279577054-acfeccf8fc52?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1732294888497-dfdd2379fefa?q=80&w=1476&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Voltaremos com o coração quente e muita história pra contar sobre os vinhos da região.",
         emoji: "🥰"
       }
@@ -130,17 +130,17 @@ export const GIFT_OPTIONS: GiftOption[] = [
     imageUrl: "https://plus.unsplash.com/premium_photo-1661962743075-4f3df12cda88?q=80&w=2746&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
     gallery: [
       {
-        imageUrl: "https://images.unsplash.com/photo-1738424444969-b72d607be4b2?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl: "https://images.unsplash.com/photo-1675409145919-277c0fc2aa7d?q=80&w=1674&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Depois de tanto bater perna, tudo o que queremos é chegar num lugar confortável e abrir a cortina.",
         emoji: "😌"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1735273615046-7edfbedf2af1?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+        imageUrl: "https://images.unsplash.com/photo-1609534104699-203fe3de45e1?q=80&w=2076&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Imagine abrir a janela e dar de cara com o Duomo. É aqui que você entra: seu presente ajuda a gente com essa estadia especial!",
         emoji: "🏨"
       },
       {
-        imageUrl: "https://images.unsplash.com/photo-1529260830199-42c24126f198?auto=format&fit=crop&q=80&w=1200",
+        imageUrl: "https://images.unsplash.com/photo-1731844737686-0165a586cf06?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
         caption: "Nada supera o sentimento de acordar e dormir olhando para o cartão postal de Florença.",
         emoji: "❤️"
       }
