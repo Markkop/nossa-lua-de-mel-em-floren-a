@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { GIFT_OPTIONS } from './constants';
 import { GiftOption } from './types';
 import GiftCard from './components/GiftCard';
@@ -53,10 +54,21 @@ const App: React.FC = () => {
             </svg>
           </div>
           <h2 className="text-4xl md:text-5xl font-serif text-[#3d2b1f] mb-8">Nossa Lista de Presentes</h2>
-          <p className="text-lg text-gray-600 leading-relaxed mb-12 font-light">
+          <p className="text-lg text-gray-600 leading-relaxed mb-8 font-light">
             Sua presença é o nosso maior presente, mas se desejar nos agraciar com um gesto especial para nossa lua de mel, 
             escolhemos alguns momentos que sonhamos viver em Florença.
           </p>
+          
+          <Link 
+            to="/hospedagem"
+            className="inline-flex items-center gap-2 bg-[#fdfbf7] border-2 border-[#8b5e3c] text-[#8b5e3c] px-6 py-3 rounded-xl font-medium hover:bg-[#8b5e3c] hover:text-white transition-all duration-300 mb-12"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            Ver Opções de Hospedagem
+          </Link>
+          
           <div className="w-32 h-[1px] bg-[#8b5e3c] mx-auto opacity-40"></div>
         </div>
       </section>
