@@ -35,24 +35,19 @@ const AccommodationCard: React.FC<AccommodationCardProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
         
         {/* Cluster Badge */}
-        <div 
-          className="absolute top-4 left-4 px-3 py-1 rounded-full text-white text-xs font-medium shadow-sm"
-          style={{ backgroundColor: clusterColor }}
-        >
-          {getClusterLabel(accommodation.cluster)}
-        </div>
+        {getClusterLabel(accommodation.cluster) && (
+          <div 
+            className="absolute top-4 left-4 px-3 py-1 rounded-full text-white text-xs font-medium shadow-sm"
+            style={{ backgroundColor: clusterColor }}
+          >
+            {getClusterLabel(accommodation.cluster)}
+          </div>
+        )}
         
         {/* Distance Badge */}
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full shadow-sm">
           <span className="text-[#8b5e3c] font-bold text-sm">{accommodation.distanceToVenue}</span>
         </div>
-        
-        {/* Venue Badge */}
-        {accommodation.isVenue && (
-          <div className="absolute bottom-4 left-4 right-4 bg-[#d4a574] text-white text-center py-2 rounded-xl font-semibold text-sm">
-            Local do Casamento
-          </div>
-        )}
       </div>
       
       <div className="p-6 flex-grow flex flex-col">

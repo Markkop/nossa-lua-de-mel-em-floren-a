@@ -2,6 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 import { Accommodation } from '../types';
 import { geocodeAddress, getCachedLocation, GeocodedLocation } from '../utils/geocoding';
 
+// Set to false to use hardcoded coordinates from accommodations.ts
+// Set to true to enable Google Geocoding API
+const USE_GEOCODING = false;
+
 export interface GeocodingState {
   isLoading: boolean;
   progress: number;
@@ -23,6 +27,22 @@ export interface UseGeocodedAccommodationsResult {
 export function useGeocodedAccommodations(
   originalAccommodations: Accommodation[]
 ): UseGeocodedAccommodationsResult {
+  // When geocoding is disabled, return original accommodations immediately
+  if (!USE_GEOCODING) {
+    const venue = originalAccommodations.find(a => a.isVenue);
+    return {
+      accommodations: originalAccommodations,
+      geocodingState: {
+        isLoading: false,
+        progress: originalAccommodations.length,
+        total: originalAccommodations.length,
+        error: null,
+        failedCount: 0,
+      },
+      venueCenter: venue ? { lat: venue.lat, lng: venue.lng } : null,
+    };
+  }
+
   const [geocodedCoords, setGeocodedCoords] = useState<Map<string, GeocodedLocation>>(new Map());
   const [state, setState] = useState<GeocodingState>({
     isLoading: true,

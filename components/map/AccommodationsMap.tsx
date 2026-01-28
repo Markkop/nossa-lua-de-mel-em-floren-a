@@ -1,6 +1,6 @@
 import React, { useState, lazy, Suspense } from 'react';
 import { Accommodation } from '../../types';
-import { MAP_PROVIDER, CLUSTER_COLORS, CLUSTER_LABELS, MapProvider, VENUE_CENTER } from './map-shared';
+import { MAP_PROVIDER, MapProvider, VENUE_CENTER } from './map-shared';
 
 // Lazy load map components
 const GoogleMapsView = lazy(() => import('./GoogleMapsView'));
@@ -18,20 +18,6 @@ const MapLoadingFallback: React.FC = () => (
       <div className="w-12 h-12 border-4 border-[#8b5e3c] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
       <span className="text-gray-500">Carregando mapa...</span>
     </div>
-  </div>
-);
-
-const Legend: React.FC = () => (
-  <div className="flex flex-wrap gap-3 justify-center mt-4">
-    {(Object.keys(CLUSTER_COLORS) as Array<keyof typeof CLUSTER_COLORS>).map((cluster) => (
-      <div key={cluster} className="flex items-center gap-2">
-        <div 
-          className="w-3 h-3 rounded-full border-2 border-white shadow-sm"
-          style={{ backgroundColor: CLUSTER_COLORS[cluster] }}
-        />
-        <span className="text-xs text-gray-600">{CLUSTER_LABELS[cluster]}</span>
-      </div>
-    ))}
   </div>
 );
 
@@ -67,7 +53,6 @@ const AccommodationsMap: React.FC<AccommodationsMapProps> = ({
           <LeafletMapView {...mapProps} />
         )}
       </Suspense>
-      <Legend />
     </div>
   );
 };

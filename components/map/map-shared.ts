@@ -24,10 +24,10 @@ export const CLUSTER_COLORS: Record<AccommodationCluster, string> = {
 };
 
 export const CLUSTER_LABELS: Record<AccommodationCluster, string> = {
-  venue: 'Local do Casamento',
-  osni_ortiga: 'Mesma Rua (a pé)',
-  centro: 'Centro da Lagoa',
-  rendeiras: 'Av. das Rendeiras',
+  venue: '',
+  osni_ortiga: '',
+  centro: '',
+  rendeiras: '',
   retiro: 'Retiro / Paz',
 };
 
