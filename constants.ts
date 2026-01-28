@@ -1,6 +1,12 @@
 
 import { GiftOption } from './types';
 
+export const DOMAINS = {
+  root: 'https://yoshaemark.com',
+  presentes: 'https://presentes.yoshaemark.com',
+  hospedagem: 'https://hospedagem.yoshaemark.com',
+};
+
 export const GIFT_OPTIONS: GiftOption[] = [
   {
     id: 1,
