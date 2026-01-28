@@ -47,11 +47,12 @@ const InfoContent: React.FC<InfoContentProps> = ({ accommodation }) => (
   <div className="min-w-[200px] max-w-[280px] p-1">
     <h3 className="font-bold text-[#3d2b1f] text-sm mb-1">
       {accommodation.name}
-      {accommodation.rating && (
+      {accommodation.id !== 'haute-haus' && accommodation.rating && (
         <> (<span className="text-yellow-500">★</span> {accommodation.rating})</>
       )}
-      {' '}
-      {getCarTime(accommodation.distanceToVenue)}
+      {accommodation.id !== 'haute-haus' && (
+        <> {' '}{getCarTime(accommodation.distanceToVenue)}</>
+      )}
     </h3>
     <p className="text-xs text-gray-500 mb-2">{accommodation.address}</p>
     

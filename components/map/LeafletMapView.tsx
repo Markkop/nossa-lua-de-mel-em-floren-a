@@ -170,11 +170,12 @@ const LeafletMapView: React.FC<MapViewProps> = ({
               <div className="min-w-[200px] max-w-[280px] p-3">
                 <h3 className="font-bold text-[#3d2b1f] text-sm mb-1">
                   {accom.name}
-                  {accom.rating && (
+                  {accom.id !== 'haute-haus' && accom.rating && (
                     <> (<span className="text-yellow-500">★</span> {accom.rating})</>
                   )}
-                  {' '}
-                  {getCarTime(accom.distanceToVenue)}
+                  {accom.id !== 'haute-haus' && (
+                    <> {' '}{getCarTime(accom.distanceToVenue)}</>
+                  )}
                 </h3>
                 <p className="text-xs text-gray-500 mb-2">{accom.address}</p>
                 
