@@ -155,7 +155,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
 
   return (
     <div 
-      className="fixed inset-0 z-[60] flex items-center justify-center overflow-hidden bg-black/95 backdrop-blur-md animate-fade"
+      className="fixed inset-0 z-[60] flex items-center justify-center overflow-hidden bg-black animate-fade"
       onClick={handleBackdropClick}
     >
       {/* Close button */}

@@ -36,7 +36,7 @@ const ValuePixModal: React.FC<ValuePixModalProps> = ({ amount, onClose }) => {
 
   return (
     <div 
-      className="fixed inset-0 z-[70] flex items-center justify-center overflow-hidden bg-black/95 backdrop-blur-md animate-fade"
+      className="fixed inset-0 z-[70] flex items-center justify-center overflow-hidden bg-black animate-fade"
       onClick={handleBackdropClick}
     >
       {/* Close button */}

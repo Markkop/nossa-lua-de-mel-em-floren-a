@@ -25,7 +25,7 @@ const PixModal: React.FC<PixModalProps> = ({ gift, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black transition-opacity">
       <div className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl transform transition-all">
         <div className="p-6 text-center">
           <button 
