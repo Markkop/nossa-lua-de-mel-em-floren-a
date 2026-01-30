@@ -93,6 +93,29 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
     }
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't handle if ValuePixModal is open
+      if (selectedValue !== null) return;
+      
+      switch (e.key) {
+        case 'Escape':
+          onClose();
+          break;
+        case 'ArrowLeft':
+          goPrev();
+          break;
+        case 'ArrowRight':
+          goNext();
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose, selectedValue, currentSlideIndex, currentGiftIndex]);
+
   // Swipe handlers
   const minSwipeDistance = 50;
 
