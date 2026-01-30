@@ -149,11 +149,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
       <div className="hidden md:block">
         {showPrevButton && (
           <div 
-            className="fixed left-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+            className="fixed left-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-40 hover:opacity-100 transition-opacity duration-200"
             onClick={handleLeftEdgeClick}
           >
             <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent relative">
-              <div className="absolute inset-y-0 left-4 flex items-center">
+              <div className="absolute inset-y-0 left-8 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -163,11 +163,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
         )}
         {showNextButton && (
           <div 
-            className="fixed right-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+            className="fixed right-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-40 hover:opacity-100 transition-opacity duration-200"
             onClick={handleRightEdgeClick}
           >
             <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent relative">
-              <div className="absolute inset-y-0 right-4 flex items-center">
+              <div className="absolute inset-y-0 right-8 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -278,7 +278,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
       </div>
 
       {/* Navigation area - Footer */}
-      <div className="absolute bottom-6 left-0 right-0 px-8">
+      <div className="absolute bottom-6 left-0 right-0 px-8 md:hidden">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Previous button - hidden on first slide of first gift */}
           <div className="w-12">
