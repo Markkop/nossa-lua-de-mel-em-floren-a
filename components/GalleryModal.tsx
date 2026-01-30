@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { GiftOption } from '../types';
-import { getPixCode, hasPixCode } from '../pixConfig';
+import ValuePixModal from './ValuePixModal';
+
+const VALUE_OPTIONS = [50, 100, 250, 500, 1000, 2000];
 
 interface GalleryModalProps {
   allGifts: GiftOption[];
@@ -8,11 +10,20 @@ interface GalleryModalProps {
   onClose: () => void;
 }
 
+const CONTRIBUTION_MESSAGES = [
+  "Ajude esse momento a acontecer",
+  "Contribua de acordo com a sua realidade",
+  "Torne esse sonho realidade",
+  "Financie essa aventura",
+  "Seja parte dessa história",
+  "Faça essa viagem sair do papel"
+];
+
 const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex, onClose }) => {
   const [currentGiftIndex, setCurrentGiftIndex] = useState(startingGiftIndex);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
-  const [copied, setCopied] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
+  const [selectedValue, setSelectedValue] = useState<number | null>(null);
   
   // Swipe state
   const [touchStart, setTouchStart] = useState<number | null>(null);
@@ -22,8 +33,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
   useEffect(() => {
     setCurrentGiftIndex(startingGiftIndex);
     setCurrentSlideIndex(0);
-    setCopied(false);
     setAnimationKey(0);
+    setSelectedValue(null);
   }, [startingGiftIndex]);
 
   // Prevent background scrolling when modal is open
@@ -42,8 +53,6 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
   const isFirstSlide = currentSlideIndex === 0;
   const isFirstGift = currentGiftIndex === 0;
   const isLastGift = currentGiftIndex === allGifts.length - 1;
-  const pixCode = getPixCode(currentGift.amount);
-  const isPixConfigured = hasPixCode(currentGift.amount);
 
   // Hide prev button only on first slide of first gift
   const showPrevButton = !(isFirstSlide && isFirstGift);
@@ -59,7 +68,6 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
       // On last slide, move to first slide of next gift
       setCurrentGiftIndex(currentGiftIndex + 1);
       setCurrentSlideIndex(0);
-      setCopied(false);
       setAnimationKey(prev => prev + 1);
     }
   };
@@ -75,18 +83,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
       const prevGiftTotalSlides = prevGift.gallery.length + 1;
       setCurrentGiftIndex(currentGiftIndex - 1);
       setCurrentSlideIndex(prevGiftTotalSlides - 1);
-      setCopied(false);
       setAnimationKey(prev => prev + 1);
     }
-  };
-
-  const handleCopy = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    navigator.clipboard.writeText(pixCode);
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 2000);
   };
 
   const handleBackdropClick = (e: React.MouseEvent) => {
@@ -219,12 +217,12 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             </div>
           </div>
         ) : (
-          // Thank you / PIX slide - "Grazie Mille"
+          // Thank you / PIX slide - "Grazie Mille" with value buttons
           <div 
             key={`slide-${animationKey}`}
             className="animate-fadeIn"
           >
-            <div className="bg-white/5 border border-white/10 rounded-3xl px-8 py-5 md:px-12 md:py-6 max-w-xl mx-auto text-center">
+            <div className="bg-white/5 border border-white/10 rounded-3xl px-8 py-8 md:px-12 md:py-10 max-w-xl mx-auto text-center">
               {/* Heart icon */}
               <div className="mb-6 text-[#e6d5c3] opacity-80">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="currentColor" viewBox="0 0 24 24">
@@ -236,70 +234,34 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
                 Grazie Mille
               </h3>
               <p className="text-white/60 mb-8 italic text-lg font-light">
-                Todo o valor arrecadado contribuirá com a nossa lua de mel.
+                {CONTRIBUTION_MESSAGES[currentGiftIndex % CONTRIBUTION_MESSAGES.length]}
               </p>
               
-              {/* QR Code container */}
-              <div className="mb-6 inline-block">
-                <div className="bg-white p-3 rounded-xl shadow-xl">
-                  <div className="w-40 h-40">
-                    {isPixConfigured ? (
-                      <img 
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(pixCode)}`}
-                        alt="QR Code PIX"
-                        className="w-full h-full"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100 rounded text-gray-400 text-xs text-center p-2">
-                        QR Code será exibido quando o código PIX for configurado
-                      </div>
-                    )}
-                  </div>
-                </div>
+              {/* Value buttons grid */}
+              <div className="grid grid-cols-3 gap-3 md:gap-4">
+                {VALUE_OPTIONS.map((value) => (
+                  <button
+                    key={value}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedValue(value);
+                    }}
+                    className="py-3 md:py-4 px-2 md:px-4 bg-white/10 border-2 border-[#e6d5c3]/50 text-[#e6d5c3] font-normal rounded-xl hover:bg-[#8b5e3c] hover:border-[#8b5e3c] hover:text-white transition-all duration-300 active:scale-95 text-sm md:text-base"
+                  >
+                    R$ {value.toLocaleString('pt-BR')},00
+                  </button>
+                ))}
               </div>
-
-              {/* Gift info */}
-              <div className="mb-6">
-                <div className="text-2xl font-bold text-white">
-                  R$ {currentGift.amount.toLocaleString('pt-BR')},00
-                </div>
-              </div>
-
-              {/* Copy button */}
-              {isPixConfigured ? (
-                <button 
-                  onClick={handleCopy}
-                  className={`w-full py-4 rounded-xl font-bold text-base shadow-lg transition-all duration-300 flex items-center justify-center gap-2 ${
-                    copied 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-[#8b5e3c] text-white hover:bg-[#a67d5c]'
-                  }`}
-                >
-                  {copied ? (
-                    <>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                      Código Copiado!
-                    </>
-                  ) : (
-                    <>
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" />
-                      </svg>
-                      Copiar Código PIX
-                    </>
-                  )}
-                </button>
-              ) : (
-                <div className="bg-yellow-500/10 border border-yellow-500/30 p-4 rounded-xl">
-                  <p className="text-yellow-200 text-sm">
-                    O código PIX para este valor ainda não foi configurado.
-                  </p>
-                </div>
-              )}
             </div>
           </div>
+        )}
+
+        {/* Value PIX Modal */}
+        {selectedValue && (
+          <ValuePixModal 
+            amount={selectedValue}
+            onClose={() => setSelectedValue(null)} 
+          />
         )}
       </div>
 

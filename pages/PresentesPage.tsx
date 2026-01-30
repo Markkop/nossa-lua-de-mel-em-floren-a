@@ -5,10 +5,14 @@ import { GiftOption } from '../types';
 import GiftCard from '../components/GiftCard';
 import PixModal from '../components/PixModal';
 import GalleryModal from '../components/GalleryModal';
+import ValuePixModal from '../components/ValuePixModal';
+
+const VALUE_OPTIONS = [50, 100, 250, 500, 1000, 2000];
 
 const PresentesPage: React.FC = () => {
   const [selectedGift, setSelectedGift] = useState<GiftOption | null>(null);
   const [galleryGift, setGalleryGift] = useState<GiftOption | null>(null);
+  const [selectedValue, setSelectedValue] = useState<number | null>(null);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -62,6 +66,22 @@ const PresentesPage: React.FC = () => {
         </div>
       </section>
 
+      {/* Value Selection Section */}
+      <section className="pb-16 bg-[#fdfbf7] text-center px-4">
+        <h3 className="text-lg font-light text-[#3d2b1f] mb-8">Contribua para esse sonho se tornar realidade</h3>
+        <div className="grid grid-cols-3 gap-3 md:gap-4 max-w-lg mx-auto">
+          {VALUE_OPTIONS.map((value) => (
+            <button
+              key={value}
+              onClick={() => setSelectedValue(value)}
+              className="py-3 md:py-4 px-2 md:px-4 bg-white border-2 border-[#8b5e3c] text-[#8b5e3c] font-bold rounded-xl hover:bg-[#8b5e3c] hover:text-white transition-all duration-300 active:scale-95 text-sm md:text-base"
+            >
+              R$ {value.toLocaleString('pt-BR')},00
+            </button>
+          ))}
+        </div>
+      </section>
+
       {/* Gifts Grid */}
       <main className="container mx-auto px-4 pb-40">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
@@ -104,6 +124,12 @@ const PresentesPage: React.FC = () => {
           allGifts={GIFT_OPTIONS}
           startingGiftIndex={GIFT_OPTIONS.findIndex(g => g.id === galleryGift.id)}
           onClose={() => setGalleryGift(null)} 
+        />
+      )}
+      {selectedValue && (
+        <ValuePixModal 
+          amount={selectedValue}
+          onClose={() => setSelectedValue(null)} 
         />
       )}
     </div>
