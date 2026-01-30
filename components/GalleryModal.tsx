@@ -13,6 +13,10 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [copied, setCopied] = useState(false);
   const [animationKey, setAnimationKey] = useState(0);
+  
+  // Swipe state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
   // Reset state when starting gift changes
   useEffect(() => {
@@ -21,6 +25,14 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
     setCopied(false);
     setAnimationKey(0);
   }, [startingGiftIndex]);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, []);
 
   if (allGifts.length === 0) return null;
 
@@ -68,7 +80,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
     }
   };
 
-  const handleCopy = () => {
+  const handleCopy = (e: React.MouseEvent) => {
+    e.stopPropagation();
     navigator.clipboard.writeText(pixCode);
     setCopied(true);
     setTimeout(() => {
@@ -82,6 +95,43 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
     }
   };
 
+  // Swipe handlers
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe && showNextButton) goNext();
+    if (isRightSwipe && showPrevButton) goPrev();
+    
+    // Reset touch state
+    setTouchStart(null);
+    setTouchEnd(null);
+  };
+
+  // Edge click handlers with propagation stop
+  const handleLeftEdgeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (showPrevButton) goPrev();
+  };
+
+  const handleRightEdgeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (showNextButton) goNext();
+  };
+
   return (
     <div 
       className="fixed inset-0 z-[60] flex items-center justify-center overflow-hidden bg-black/95 backdrop-blur-md animate-fade"
@@ -89,7 +139,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
     >
       {/* Close button */}
       <button 
-        onClick={onClose}
+        onClick={(e) => { e.stopPropagation(); onClose(); }}
         className="absolute top-6 right-6 z-20 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-all text-white"
       >
         <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -97,8 +147,49 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
         </svg>
       </button>
 
-      {/* Main content area */}
-      <div className="w-full max-w-5xl px-8 pb-20">
+      {/* Main content area with touch handlers */}
+      <div 
+        className="w-full max-w-5xl px-8 pb-20 relative"
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+      >
+        {/* Left edge navigation zone */}
+        <div 
+          className={`absolute left-0 top-0 bottom-0 w-[15%] z-10 transition-opacity duration-200 ${
+            showPrevButton 
+              ? 'cursor-pointer opacity-0 hover:opacity-100' 
+              : 'pointer-events-none'
+          }`}
+          onClick={handleLeftEdgeClick}
+        >
+          <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent flex items-center justify-center">
+            {showPrevButton && (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            )}
+          </div>
+        </div>
+
+        {/* Right edge navigation zone */}
+        <div 
+          className={`absolute right-0 top-0 bottom-0 w-[15%] z-10 transition-opacity duration-200 ${
+            showNextButton 
+              ? 'cursor-pointer opacity-0 hover:opacity-100' 
+              : 'pointer-events-none'
+          }`}
+          onClick={handleRightEdgeClick}
+        >
+          <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent flex items-center justify-center">
+            {showNextButton && (
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            )}
+          </div>
+        </div>
+
         {!isLastSlide ? (
           // Story slides (0-2)
           <div 
@@ -110,10 +201,11 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
               <img 
                 src={currentGift.gallery[currentSlideIndex].imageUrl} 
                 alt={`${currentGift.title}`}
-                className="w-full h-full object-cover object-center"
+                className="w-full h-full object-cover object-center select-none pointer-events-none"
+                draggable={false}
               />
               {/* Gradient overlay for depth */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
             </div>
             
             {/* Caption - positioned below the image */}
@@ -218,7 +310,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
           <div className="w-12">
             {showPrevButton && (
               <button
-                onClick={goPrev}
+                onClick={(e) => { e.stopPropagation(); goPrev(); }}
                 className="p-3 rounded-full text-white hover:bg-white/10 transition-all active:scale-95"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -233,7 +325,8 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             {Array.from({ length: totalSlides }).map((_, index) => (
               <button
                 key={index}
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setCurrentSlideIndex(index);
                   setAnimationKey(prev => prev + 1);
                 }}
@@ -250,7 +343,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
           <div className="w-12">
             {showNextButton && (
               <button
-                onClick={goNext}
+                onClick={(e) => { e.stopPropagation(); goNext(); }}
                 className="p-3 rounded-full text-white hover:bg-white/10 transition-all active:scale-95"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
