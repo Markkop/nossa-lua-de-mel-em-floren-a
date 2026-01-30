@@ -209,7 +209,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             </div>
             
             {/* Caption - positioned below the image */}
-            <div className="mt-8 text-center px-4">
+            <div className="mt-2 md:mt-8 text-center px-4">
               <p className="text-white text-2xl md:text-xl font-serif italic font-light leading-relaxed max-w-2xl mx-auto">
                 {currentGift.gallery[currentSlideIndex].caption}
                 {currentGift.gallery[currentSlideIndex].emoji && (
