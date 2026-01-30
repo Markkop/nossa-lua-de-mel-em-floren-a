@@ -62,7 +62,8 @@ const ValuePixModal: React.FC<ValuePixModalProps> = ({ amount, onClose }) => {
             Grazie Mille
           </h3>
           <p className="text-white/60 mb-8 italic text-lg font-light">
-            Todo o valor arrecadado contribuirá com a nossa lua de mel.
+            Todo o valor arrecadado <br />
+            contribuirá com a nossa lua de mel.
           </p>
           
           {/* QR Code container */}
