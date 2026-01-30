@@ -302,7 +302,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
 
       {/* Navigation area - Footer */}
       <div className="absolute bottom-6 left-0 right-0 px-8">
-        <div className="max-w-5xl mx-auto flex items-center justify-between">
+        <div className="max-w-5xl mx-auto flex items-center justify-between md:justify-center">
           {/* Previous button - hidden on first slide of first gift */}
           <div className="w-12 md:hidden">
             {showPrevButton && (
