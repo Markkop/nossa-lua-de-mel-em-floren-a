@@ -153,7 +153,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             onClick={handleLeftEdgeClick}
           >
             <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent relative">
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center">
+              <div className="absolute inset-y-0 left-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                 </svg>
@@ -167,7 +167,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             onClick={handleRightEdgeClick}
           >
             <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent relative">
-              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center">
+              <div className="absolute inset-y-0 right-4 flex items-center">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -260,7 +260,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
                     }}
                     className="py-3 md:py-4 px-2 md:px-4 bg-white/10 border-2 border-[#e6d5c3]/50 text-[#e6d5c3] font-normal rounded-xl hover:bg-[#8b5e3c] hover:border-[#8b5e3c] hover:text-white transition-all duration-300 active:scale-95 text-sm md:text-base"
                   >
-                    R$ {value.toLocaleString('pt-BR')},00
+                    R$ {value.toLocaleString('pt-BR')}
                   </button>
                 ))}
               </div>

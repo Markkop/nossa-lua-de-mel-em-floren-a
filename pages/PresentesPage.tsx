@@ -76,7 +76,7 @@ const PresentesPage: React.FC = () => {
               onClick={() => setSelectedValue(value)}
               className="py-3 md:py-4 px-2 md:px-4 bg-white border-2 border-[#8b5e3c] text-[#8b5e3c] font-bold rounded-xl hover:bg-[#8b5e3c] hover:text-white transition-all duration-300 active:scale-95 text-sm md:text-base"
             >
-              R$ {value.toLocaleString('pt-BR')},00
+              R$ {value.toLocaleString('pt-BR')}
             </button>
           ))}
         </div>

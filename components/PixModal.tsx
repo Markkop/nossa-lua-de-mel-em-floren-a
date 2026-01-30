@@ -54,7 +54,7 @@ const PixModal: React.FC<PixModalProps> = ({ gift, onClose }) => {
                 </div>
               )}
             </div>
-            <div className="text-sm text-gray-500 uppercase tracking-widest font-bold">Valor: R$ {gift.amount.toLocaleString('pt-BR')},00</div>
+            <div className="text-sm text-gray-500 uppercase tracking-widest font-bold">Valor: R$ {gift.amount.toLocaleString('pt-BR')}</div>
           </div>
 
           <div className="space-y-4">

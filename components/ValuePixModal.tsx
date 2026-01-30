@@ -87,7 +87,7 @@ const ValuePixModal: React.FC<ValuePixModalProps> = ({ amount, onClose }) => {
           {/* Amount info */}
           <div className="mb-6">
             <div className="text-2xl font-bold text-white">
-              R$ {amount.toLocaleString('pt-BR')},00
+              R$ {amount.toLocaleString('pt-BR')}
             </div>
           </div>
 
