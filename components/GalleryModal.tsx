@@ -149,7 +149,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
       <div className="hidden md:block">
         {showPrevButton && (
           <div 
-            className="fixed left-0 inset-y-0 w-20 z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+            className="fixed left-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
             onClick={handleLeftEdgeClick}
           >
             <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent flex items-center justify-center">
@@ -161,7 +161,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
         )}
         {showNextButton && (
           <div 
-            className="fixed right-0 inset-y-0 w-20 z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+            className="fixed right-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
             onClick={handleRightEdgeClick}
           >
             <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent flex items-center justify-center">
