@@ -145,6 +145,34 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
         </svg>
       </button>
 
+      {/* Desktop edge navigation - full screen edges */}
+      <div className="hidden md:block">
+        {showPrevButton && (
+          <div 
+            className="fixed left-0 inset-y-0 w-20 z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+            onClick={handleLeftEdgeClick}
+          >
+            <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </div>
+          </div>
+        )}
+        {showNextButton && (
+          <div 
+            className="fixed right-0 inset-y-0 w-20 z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
+            onClick={handleRightEdgeClick}
+          >
+            <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </div>
+          </div>
+        )}
+      </div>
+
       {/* Main content area with touch handlers */}
       <div 
         className="w-full max-w-5xl px-8 pb-20 relative"
@@ -152,40 +180,20 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
       >
-        {/* Left edge navigation zone */}
-        <div 
-          className={`absolute left-0 top-0 bottom-0 w-[15%] z-10 transition-opacity duration-200 ${
-            showPrevButton 
-              ? 'cursor-pointer opacity-0 md:hover:opacity-100' 
-              : 'pointer-events-none'
-          }`}
-          onClick={handleLeftEdgeClick}
-        >
-          <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent hidden md:flex items-center justify-center">
-            {showPrevButton && (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            )}
-          </div>
-        </div>
-
-        {/* Right edge navigation zone */}
-        <div 
-          className={`absolute right-0 top-0 bottom-0 w-[15%] z-10 transition-opacity duration-200 ${
-            showNextButton 
-              ? 'cursor-pointer opacity-0 md:hover:opacity-100' 
-              : 'pointer-events-none'
-          }`}
-          onClick={handleRightEdgeClick}
-        >
-          <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent hidden md:flex items-center justify-center">
-            {showNextButton && (
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
-            )}
-          </div>
+        {/* Mobile edge navigation - within gallery area, invisible but clickable */}
+        <div className="md:hidden">
+          {showPrevButton && (
+            <div 
+              className="absolute left-0 top-0 bottom-0 w-[15%] z-10"
+              onClick={handleLeftEdgeClick}
+            />
+          )}
+          {showNextButton && (
+            <div 
+              className="absolute right-0 top-0 bottom-0 w-[15%] z-10"
+              onClick={handleRightEdgeClick}
+            />
+          )}
         </div>
 
         {!isLastSlide ? (
