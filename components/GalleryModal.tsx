@@ -158,12 +158,12 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
         <div 
           className={`absolute left-0 top-0 bottom-0 w-[15%] z-10 transition-opacity duration-200 ${
             showPrevButton 
-              ? 'cursor-pointer opacity-0 hover:opacity-100' 
+              ? 'cursor-pointer opacity-0 md:hover:opacity-100' 
               : 'pointer-events-none'
           }`}
           onClick={handleLeftEdgeClick}
         >
-          <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent flex items-center justify-center">
+          <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent hidden md:flex items-center justify-center">
             {showPrevButton && (
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -176,12 +176,12 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
         <div 
           className={`absolute right-0 top-0 bottom-0 w-[15%] z-10 transition-opacity duration-200 ${
             showNextButton 
-              ? 'cursor-pointer opacity-0 hover:opacity-100' 
+              ? 'cursor-pointer opacity-0 md:hover:opacity-100' 
               : 'pointer-events-none'
           }`}
           onClick={handleRightEdgeClick}
         >
-          <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent flex items-center justify-center">
+          <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent hidden md:flex items-center justify-center">
             {showNextButton && (
               <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
