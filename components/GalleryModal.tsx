@@ -301,10 +301,10 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
       </div>
 
       {/* Navigation area - Footer */}
-      <div className="absolute bottom-6 left-0 right-0 px-8 md:hidden">
+      <div className="absolute bottom-6 left-0 right-0 px-8">
         <div className="max-w-5xl mx-auto flex items-center justify-between">
           {/* Previous button - hidden on first slide of first gift */}
-          <div className="w-12">
+          <div className="w-12 md:hidden">
             {showPrevButton && (
               <button
                 onClick={(e) => { e.stopPropagation(); goPrev(); }}
@@ -337,7 +337,7 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
           </div>
 
           {/* Next button - hidden on last slide of last gift */}
-          <div className="w-12">
+          <div className="w-12 md:hidden">
             {showNextButton && (
               <button
                 onClick={(e) => { e.stopPropagation(); goNext(); }}
