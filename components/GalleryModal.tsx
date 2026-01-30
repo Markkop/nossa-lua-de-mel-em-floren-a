@@ -152,10 +152,12 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             className="fixed left-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
             onClick={handleLeftEdgeClick}
           >
-            <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
+            <div className="h-full w-full bg-gradient-to-r from-white/10 to-transparent relative">
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </div>
             </div>
           </div>
         )}
@@ -164,10 +166,12 @@ const GalleryModal: React.FC<GalleryModalProps> = ({ allGifts, startingGiftIndex
             className="fixed right-0 inset-y-0 w-[20%] z-10 cursor-pointer opacity-0 hover:opacity-100 transition-opacity duration-200"
             onClick={handleRightEdgeClick}
           >
-            <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-              </svg>
+            <div className="h-full w-full bg-gradient-to-l from-white/10 to-transparent relative">
+              <div className="absolute inset-y-0 left-1/2 -translate-x-1/2 flex items-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </div>
             </div>
           </div>
         )}
