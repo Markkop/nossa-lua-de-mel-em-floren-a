@@ -12,7 +12,7 @@ interface GalleryModalProps {
 
 const CONTRIBUTION_MESSAGES = [
   "Ajude esse momento a acontecer",
-  "Contribua de acordo com a sua realidade",
+  "Toda contribuição é um presente",
   "Torne esse sonho realidade",
   "Financie essa aventura",
   "Seja parte dessa história",
