@@ -29,6 +29,7 @@ export interface Accommodation {
   priceRange: string | null;
   imageUrl: string;
   bookingUrl: string | null;
+  mapsUrl: string | null;
   phone: string | null;
   amenities: string[];
   idealFor: string;

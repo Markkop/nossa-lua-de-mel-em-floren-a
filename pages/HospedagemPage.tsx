@@ -150,7 +150,7 @@ const HospedagemPage: React.FC = () => {
                   >
                     <td className="py-3 px-4">
                       <a 
-                        href={getGoogleMapsUrl(acc.lat, acc.lng, acc.address)}
+                        href={acc.mapsUrl || getGoogleMapsUrl(acc.lat, acc.lng, acc.address)}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-[#8b5e3c] hover:underline font-medium text-sm"
