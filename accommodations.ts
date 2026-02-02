@@ -51,7 +51,7 @@ export const ACCOMMODATIONS: Accommodation[] = [
     lat: -27.626798024033413,
     lng: -48.46966434746811,
     distanceToVenue: '~1.6km',
-    needsCar: false,
+    needsCar: true,
     rating: 8.5,
     ratingLabel: 'Muito Bom',
     priceRange: '$$',
