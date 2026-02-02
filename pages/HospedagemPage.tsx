@@ -3,6 +3,40 @@ import { ACCOMMODATIONS } from '../accommodations';
 import AccommodationsMap from '../components/map/AccommodationsMap';
 import { useGeocodedAccommodations } from '../hooks/useGeocodedAccommodations';
 
+// Helper function to parse distance string to km
+const parseDistanceToKm = (distance: string): number => {
+  const cleaned = distance.replace('~', '').trim();
+  if (cleaned.includes('km')) {
+    return parseFloat(cleaned.replace('km', ''));
+  } else if (cleaned.includes('m')) {
+    return parseFloat(cleaned.replace('m', '')) / 1000;
+  }
+  return 0;
+};
+
+// Helper function to format distance in km
+const formatDistanceKm = (distance: string): string => {
+  const km = parseDistanceToKm(distance);
+  if (km < 1) {
+    return `${(km * 1000).toFixed(0)} m`;
+  }
+  return `${km.toFixed(1)} km`;
+};
+
+// Helper function to calculate approximate driving time
+const getDrivingTime = (distance: string, needsCar: boolean): string => {
+  if (!needsCar) return '-';
+  const km = parseDistanceToKm(distance);
+  // Approximate 2 min per km in beach town traffic
+  const minutes = Math.max(2, Math.round(km * 2));
+  return `${minutes} min`;
+};
+
+// Helper function to generate Google Maps URL
+const getGoogleMapsUrl = (lat: number, lng: number, address: string): string => {
+  return `https://www.google.com/maps?q=${lat},${lng}&hl=pt-BR`;
+};
+
 const HospedagemPage: React.FC = () => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   
@@ -87,6 +121,68 @@ const HospedagemPage: React.FC = () => {
             venueCenter={venueCenter}
             onSelectAccommodation={handleSelectAccommodation}
           />
+        </div>
+      </section>
+
+      {/* Accommodations Table Section */}
+      <section className="py-12 bg-[#fdfbf7] px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-serif text-[#3d2b1f] mb-2">Comparativo</h3>
+            <p className="text-sm text-gray-500">Visão geral das opções de hospedagem</p>
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full border-collapse">
+              <thead>
+                <tr className="border-b border-[#8b5e3c]/20">
+                  <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Nome</th>
+                  <th className="text-center py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Distância</th>
+                  <th className="text-center py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Tempo de carro</th>
+                  <th className="text-center py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Preço</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ACCOMMODATIONS.filter(acc => !acc.isVenue).map((acc) => (
+                  <tr 
+                    key={acc.id} 
+                    className="border-b border-[#8b5e3c]/10 hover:bg-[#8b5e3c]/5 transition-colors"
+                  >
+                    <td className="py-3 px-4">
+                      {acc.bookingUrl ? (
+                        <a 
+                          href={acc.bookingUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-[#8b5e3c] hover:underline font-medium text-sm"
+                        >
+                          {acc.name}
+                        </a>
+                      ) : (
+                        <a 
+                          href={getGoogleMapsUrl(acc.lat, acc.lng, acc.address)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-[#8b5e3c] hover:underline font-medium text-sm"
+                        >
+                          {acc.name}
+                        </a>
+                      )}
+                    </td>
+                    <td className="text-center py-3 px-4 text-gray-600 text-sm">
+                      {formatDistanceKm(acc.distanceToVenue)}
+                    </td>
+                    <td className="text-center py-3 px-4 text-gray-600 text-sm">
+                      {getDrivingTime(acc.distanceToVenue, acc.needsCar)}
+                    </td>
+                    <td className="text-center py-3 px-4 text-[#8b5e3c] text-sm font-medium">
+                      {acc.priceRange}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
