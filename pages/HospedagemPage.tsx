@@ -149,25 +149,14 @@ const HospedagemPage: React.FC = () => {
                     className="border-b border-[#8b5e3c]/10 hover:bg-[#8b5e3c]/5 transition-colors"
                   >
                     <td className="py-3 px-4">
-                      {acc.bookingUrl ? (
-                        <a 
-                          href={acc.bookingUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer"
-                          className="text-[#8b5e3c] hover:underline font-medium text-sm"
-                        >
-                          {acc.name}
-                        </a>
-                      ) : (
-                        <a 
-                          href={getGoogleMapsUrl(acc.lat, acc.lng, acc.address)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-[#8b5e3c] hover:underline font-medium text-sm"
-                        >
-                          {acc.name}
-                        </a>
-                      )}
+                      <a 
+                        href={getGoogleMapsUrl(acc.lat, acc.lng, acc.address)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[#8b5e3c] hover:underline font-medium text-sm"
+                      >
+                        {acc.name}
+                      </a>
                     </td>
                     <td className="text-center py-3 px-4 text-gray-600 text-sm">
                       {formatDistanceKm(acc.distanceToVenue)}
