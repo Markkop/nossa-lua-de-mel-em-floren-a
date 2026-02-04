@@ -49,6 +49,24 @@ const HomePage: React.FC = () => {
                 <span className="text-xs opacity-70 font-light">Casamento em Florianópolis</span>
               </span>
             </a>
+
+            <a
+              href={DOMAINS.karaoke}
+              className="group inline-flex items-center gap-3 bg-[#3d2b1f]/60 backdrop-blur-md border border-white/40 text-white px-8 py-4 rounded-xl font-medium hover:bg-[#3d2b1f] transition-all duration-300"
+            >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M9 9l10.5-3m0 0l-3 10.5M19.5 6L12 13.5M7 21a4 4 0 100-8 4 4 0 000 8zm0 0v-6m0 6h3"
+                />
+              </svg>
+              <span className="flex flex-col items-start">
+                <span className="text-lg">Karaokê</span>
+                <span className="text-xs opacity-70 font-light">Fila de músicas</span>
+              </span>
+            </a>
           </div>
         </div>
       </header>

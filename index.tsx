@@ -5,19 +5,20 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import HomePage from './pages/HomePage';
 import PresentesPage from './pages/PresentesPage';
 import HospedagemPage from './pages/HospedagemPage';
+import KaraokePage from './pages/KaraokePage';
 
 /**
  * Detects which subdomain we're on to render the appropriate page.
- * Returns null for localhost/development to use route-based fallback.
+ * Returns null to use route-based navigation (e.g. root domain paths + localhost).
  */
-const getSubdomain = (): 'root' | 'presentes' | 'hospedagem' | null => {
+const getSubdomain = (): 'presentes' | 'hospedagem' | 'karaoke' | null => {
   const host = window.location.hostname;
   
   if (host.startsWith('presentes.')) return 'presentes';
   if (host.startsWith('hospedagem.')) return 'hospedagem';
-  if (host === 'yoshaemark.com' || host === 'www.yoshaemark.com') return 'root';
+  if (host.startsWith('karaoke.')) return 'karaoke';
   
-  // localhost or other - use route-based navigation
+  // root domain or localhost - use route-based navigation
   return null;
 };
 
@@ -32,14 +33,14 @@ const SubdomainRouter: React.FC = () => {
   // Subdomain detected - render the appropriate page directly
   if (subdomain === 'presentes') return <PresentesPage />;
   if (subdomain === 'hospedagem') return <HospedagemPage />;
-  if (subdomain === 'root') return <HomePage />;
-  
-  // No subdomain (localhost) - use route-based navigation
+  if (subdomain === 'karaoke') return <KaraokePage />;
+  // No subdomain (root domain/localhost) - use route-based navigation
   return (
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/presentes" element={<PresentesPage />} />
       <Route path="/hospedagem" element={<HospedagemPage />} />
+      <Route path="/karaoke" element={<KaraokePage />} />
     </Routes>
   );
 };

@@ -5,6 +5,7 @@ export const DOMAINS = {
   root: 'https://yoshaemark.com',
   presentes: 'https://presentes.yoshaemark.com',
   hospedagem: 'https://hospedagem.yoshaemark.com',
+  karaoke: 'https://karaoke.yoshaemark.com',
 };
 
 export const GIFT_OPTIONS: GiftOption[] = [

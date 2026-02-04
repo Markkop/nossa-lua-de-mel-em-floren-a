@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@atlaskit/pragmatic-drag-and-drop": "^1.4.0",
     "@vis.gl/react-google-maps": "^1.7.1",
     "leaflet": "^1.9.4",
     "react": "^19.2.3",
