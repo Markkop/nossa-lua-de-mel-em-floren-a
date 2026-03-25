@@ -46,7 +46,7 @@ function normalizeText(value: string): string {
 }
 
 export async function buildApp() {
-  const fastify = Fastify({ logger: true });
+  const fastify = Fastify({ logger: true, trustProxy: true });
 
   await fastify.register(cors, { origin: true });
 
