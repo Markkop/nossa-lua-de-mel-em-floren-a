@@ -128,12 +128,24 @@ const QueueRow: React.FC<QueueRowProps> = ({
   onRemove,
 }) => {
   const rowRef = useRef<HTMLTableRowElement | null>(null);
-  const handleRef = useRef<HTMLButtonElement | null>(null);
+  const desktopDragRef = useRef<HTMLButtonElement | null>(null);
+  const mobileDragRef = useRef<HTMLButtonElement | null>(null);
+  const [isMdViewport, setIsMdViewport] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia('(min-width: 768px)').matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 768px)');
+    const sync = () => setIsMdViewport(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
 
   useEffect(() => {
     if (!isDj || dragDisabled) return;
     const row = rowRef.current;
-    const handle = handleRef.current;
+    const handle = isMdViewport ? desktopDragRef.current : mobileDragRef.current;
     if (!row || !handle) return;
 
     return combine(
@@ -148,7 +160,7 @@ const QueueRow: React.FC<QueueRowProps> = ({
         canDrop: ({ source }) => source.data.listId === 'queue',
       })
     );
-  }, [isDj, dragDisabled, item.id]);
+  }, [isDj, dragDisabled, item.id, isMdViewport]);
 
   const statusLabel = index === 0 ? 'Agora' : index === 1 ? 'Próximo' : `Fila ${index + 1}`;
   const statusTone =
@@ -167,21 +179,23 @@ const QueueRow: React.FC<QueueRowProps> = ({
         .filter(Boolean)
         .join(' ')}
     >
-      <td className="py-3 px-4">
+      <td className="hidden md:table-cell py-3 px-4 align-top">
         <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusTone}`}>
           {statusLabel}
         </span>
       </td>
-      <td className="py-3 px-4 text-[#3d2b1f] font-medium">
+      <td className="py-3 px-4 text-[#3d2b1f] font-medium align-top">
+        <span
+          className={`md:hidden inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold mb-2 ${statusTone}`}
+        >
+          {statusLabel}
+        </span>
         <span className="block">{item.name}</span>
         <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">{item.song}</span>
-      </td>
-      <td className="hidden md:table-cell py-3 px-4 text-gray-600">{item.song}</td>
-      {isDj ? (
-        <td className="py-3 px-4">
-          <div className="flex items-center justify-end gap-2">
+        {isDj ? (
+          <div className="md:hidden mt-3 pt-3 border-t border-[#8b5e3c]/10 flex flex-wrap items-center gap-2">
             <button
-              ref={handleRef}
+              ref={mobileDragRef}
               type="button"
               disabled={dragDisabled || skipLoading || removeLoading}
               className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
@@ -197,15 +211,12 @@ const QueueRow: React.FC<QueueRowProps> = ({
               aria-label="Pular"
               title="Pular"
               onClick={() => void onSkip(item.id)}
-              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
             >
               {skipLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
               ) : (
-                <>
-                  <IconSkipForward className="h-4 w-4 md:hidden" />
-                  <span className="hidden md:inline">Pular</span>
-                </>
+                <IconSkipForward className="h-4 w-4" />
               )}
             </button>
             <button
@@ -215,15 +226,59 @@ const QueueRow: React.FC<QueueRowProps> = ({
               aria-label="Excluir"
               title="Excluir"
               onClick={() => void onRemove(item.id)}
-              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
             >
               {removeLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
               ) : (
-                <>
-                  <IconTrash className="h-4 w-4 md:hidden" />
-                  <span className="hidden md:inline">Excluir</span>
-                </>
+                <IconTrash className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+        ) : null}
+      </td>
+      <td className="hidden md:table-cell py-3 px-4 text-gray-600">{item.song}</td>
+      {isDj ? (
+        <td className="hidden md:table-cell py-3 px-4">
+          <div className="flex items-center justify-end gap-2">
+            <button
+              ref={desktopDragRef}
+              type="button"
+              disabled={dragDisabled || skipLoading || removeLoading}
+              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Arrastar para reordenar"
+              aria-label="Arrastar para reordenar"
+            >
+              ⇅
+            </button>
+            <button
+              type="button"
+              disabled={skipLoading || removeLoading}
+              aria-busy={skipLoading}
+              aria-label="Pular"
+              title="Pular"
+              onClick={() => void onSkip(item.id)}
+              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide min-w-[5.5rem] w-auto px-4 disabled:opacity-60 disabled:pointer-events-none"
+            >
+              {skipLoading ? (
+                <BtnSpinner className="h-3.5 w-3.5" />
+              ) : (
+                <span>Pular</span>
+              )}
+            </button>
+            <button
+              type="button"
+              disabled={skipLoading || removeLoading}
+              aria-busy={removeLoading}
+              aria-label="Excluir"
+              title="Excluir"
+              onClick={() => void onRemove(item.id)}
+              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide min-w-[5.5rem] w-auto px-4 disabled:opacity-60 disabled:pointer-events-none"
+            >
+              {removeLoading ? (
+                <BtnSpinner className="h-3.5 w-3.5" />
+              ) : (
+                <span>Excluir</span>
               )}
             </button>
           </div>
@@ -881,38 +936,38 @@ const KaraokePage: React.FC = () => {
                     <Lock className="h-5 w-5 shrink-0 opacity-60" aria-hidden strokeWidth={1.75} />
                   </button>
                 )}
+                <button
+                  type="button"
+                  onClick={() => void handleRefreshKaraoke()}
+                  disabled={isRefreshingKaraoke}
+                  aria-busy={isRefreshingKaraoke}
+                  aria-label="Atualizar lista agora"
+                  title="Atualizar lista agora"
+                  className="h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full border border-[#8b5e3c]/35 text-[#8b5e3c] bg-white shadow-sm hover:bg-[#8b5e3c]/10 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                >
+                  {isRefreshingKaraoke ? (
+                    <BtnSpinner className="h-5 w-5" />
+                  ) : (
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      aria-hidden
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                      />
+                    </svg>
+                  )}
+                </button>
               </div>
               {(activeTab === 'guest' || activeTab === 'other') && (
                 <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => void handleRefreshKaraoke()}
-                    disabled={isRefreshingKaraoke}
-                    aria-busy={isRefreshingKaraoke}
-                    aria-label="Atualizar lista agora"
-                    title="Atualizar lista agora"
-                    className="h-11 w-11 inline-flex items-center justify-center rounded-full border border-[#8b5e3c]/35 text-[#8b5e3c] bg-white shadow-sm hover:bg-[#8b5e3c]/10 transition-colors disabled:opacity-60 disabled:pointer-events-none"
-                  >
-                    {isRefreshingKaraoke ? (
-                      <BtnSpinner className="h-5 w-5" />
-                    ) : (
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        aria-hidden
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                        />
-                      </svg>
-                    )}
-                  </button>
                   <button
                     type="button"
                     onClick={() =>
@@ -1230,13 +1285,17 @@ const KaraokePage: React.FC = () => {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
-                          <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Status</th>
+                          <th className="hidden md:table-cell text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                            Status
+                          </th>
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Convidado</th>
                           <th className="hidden md:table-cell text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
                             Música
                           </th>
                           {isDj ? (
-                            <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
+                            <th className="hidden md:table-cell text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                              Ações
+                            </th>
                           ) : null}
                         </tr>
                       </thead>

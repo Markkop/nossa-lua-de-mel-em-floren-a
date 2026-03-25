@@ -69,12 +69,16 @@ export function useKaraokeSync() {
     setDjToken('');
   }, [setDjToken]);
 
+  /** Keeps polling stable if refreshKaraoke identity changes; avoids resetting the interval on every tick. */
+  const refreshKaraokeRef = useRef(refreshKaraoke);
+  refreshKaraokeRef.current = refreshKaraoke;
+
   useEffect(() => {
     let cancelled = false;
     const pollMs = getPollIntervalMs();
 
     const tick = async () => {
-      await refreshKaraoke();
+      await refreshKaraokeRef.current();
       if (!cancelled && !initialLoadDone.current) {
         initialLoadDone.current = true;
         setIsLoading(false);
@@ -90,7 +94,7 @@ export function useKaraokeSync() {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [refreshKaraoke]);
+  }, []);
 
   const loginDj = useCallback(
     async (pin: string) => {
