@@ -107,8 +107,11 @@ export function useKaraokeSync() {
 
   const addQueueEntry = useCallback(async (name: string, song: string) => {
     await postQueue(name, song);
-    await refreshState();
-  }, [refreshState]);
+    const state = await fetchKaraokeState();
+    applyState(state);
+    setLoadError(null);
+    return state;
+  }, [applyState]);
 
   const addGuestSong = useCallback(async (name: string, song: string) => {
     await postGuestSong(name, song);

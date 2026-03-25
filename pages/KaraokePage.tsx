@@ -35,6 +35,7 @@ const normalizeText = (value: string) => value.trim().replace(/\s+/g, ' ');
 const makeKey = (name: string, song: string) => `${normalizeText(name)}::${normalizeText(song)}`;
 
 const GUEST_ADDED_TO_QUEUE_MSG = 'Adicionado à fila!';
+const GUEST_REMOVED_FROM_QUEUE_MSG = 'Removido da fila!';
 
 /** Cancels parent `px-6` on mobile so tables span the card width; desktop unchanged. */
 const KARAOKE_TABLE_SCROLL_WRAP = 'overflow-x-auto -mx-6 md:mx-0';
@@ -328,8 +329,15 @@ const KaraokePage: React.FC = () => {
   const [queueName, setQueueName] = useState('');
   const [queueSong, setQueueSong] = useState('');
   const [queueError, setQueueError] = useState('');
+  const [queueJoinBannerPosition, setQueueJoinBannerPosition] = useState<number | null>(null);
+  const queueJoinBannerTimer = useRef<number | null>(null);
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isRemoveAllGuestConfirmOpen, setIsRemoveAllGuestConfirmOpen] = useState(false);
+  const [guestQueueRemoveConfirm, setGuestQueueRemoveConfirm] = useState<{
+    entry: KaraokeEntry;
+    queueId: string;
+    position: number;
+  } | null>(null);
   const [isOtherModalOpen, setIsOtherModalOpen] = useState(false);
   const [singleGuestName, setSingleGuestName] = useState('');
   const [singleGuestSong, setSingleGuestSong] = useState('');
@@ -346,6 +354,7 @@ const KaraokePage: React.FC = () => {
   const [overId, setOverId] = useState<string | null>(null);
   const [guestActionMessage, setGuestActionMessage] = useState<string | null>(null);
   const [guestActionTone, setGuestActionTone] = useState<'success' | 'error'>('success');
+  const [guestActionRowId, setGuestActionRowId] = useState<string | null>(null);
   const guestActionTimer = useRef<number | null>(null);
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const songInputRef = useRef<HTMLInputElement | null>(null);
@@ -377,6 +386,11 @@ const KaraokePage: React.FC = () => {
     [otherSongs]
   );
   const queueKeys = useMemo(() => new Set(queue.map((entry) => makeKey(entry.name, entry.song))), [queue]);
+  const queueKeyToId = useMemo(() => {
+    const m = new Map<string, string>();
+    queue.forEach((q) => m.set(makeKey(q.name, q.song), q.id));
+    return m;
+  }, [queue]);
   const nameSuggestions = useMemo<NameSuggestion[]>(() => {
     const query = normalizeText(queueName).toLowerCase();
     if (!query) return [];
@@ -432,14 +446,39 @@ const KaraokePage: React.FC = () => {
     setSongHighlightIndex(-1);
   }, [queueSong]);
 
-  const pushGuestMessage = (message: string, tone: 'success' | 'error') => {
+  const clearQueueJoinBanner = () => {
+    if (queueJoinBannerTimer.current !== null) {
+      window.clearTimeout(queueJoinBannerTimer.current);
+      queueJoinBannerTimer.current = null;
+    }
+    setQueueJoinBannerPosition(null);
+  };
+
+  const showQueueJoinBanner = (position: number) => {
+    clearQueueJoinBanner();
+    setQueueJoinBannerPosition(position);
+    queueJoinBannerTimer.current = window.setTimeout(() => {
+      setQueueJoinBannerPosition(null);
+      queueJoinBannerTimer.current = null;
+    }, 4500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (queueJoinBannerTimer.current !== null) window.clearTimeout(queueJoinBannerTimer.current);
+    };
+  }, []);
+
+  const pushGuestMessage = (message: string, tone: 'success' | 'error', anchorRowId?: string | null) => {
     setGuestActionMessage(message);
     setGuestActionTone(tone);
+    setGuestActionRowId(anchorRowId ?? null);
     if (guestActionTimer.current) {
       window.clearTimeout(guestActionTimer.current);
     }
     guestActionTimer.current = window.setTimeout(() => {
       setGuestActionMessage(null);
+      setGuestActionRowId(null);
     }, 2500);
   };
 
@@ -496,7 +535,9 @@ const KaraokePage: React.FC = () => {
     }
     setPendingAction('queue');
     try {
-      await apiAddQueue(name, song);
+      const state = await apiAddQueue(name, song);
+      const idx = state.queue.findIndex((e) => makeKey(e.name, e.song) === key);
+      if (idx >= 0) showQueueJoinBanner(idx + 1);
       if (options.clearInputs !== false) {
         setQueueName('');
         setQueueSong('');
@@ -504,6 +545,7 @@ const KaraokePage: React.FC = () => {
       setQueueError('');
       return true;
     } catch (e) {
+      clearQueueJoinBanner();
       if (showErrors) setQueueError(e instanceof Error ? e.message : 'Não foi possível entrar na fila.');
       return false;
     } finally {
@@ -516,18 +558,33 @@ const KaraokePage: React.FC = () => {
   };
 
   const handleAddGuestToQueue = async (entry: KaraokeEntry) => {
-    const key = makeKey(entry.name, entry.song);
-    if (queueKeys.has(key)) {
-      pushGuestMessage('Essa inscrição já está na fila.', 'error');
-      return;
-    }
     const actionKey = `guest-fila-${entry.id}`;
     setPendingAction(actionKey);
     try {
-      await apiAddQueue(entry.name, entry.song);
-      pushGuestMessage(GUEST_ADDED_TO_QUEUE_MSG, 'success');
+      const state = await apiAddQueue(entry.name, entry.song);
+      const key = makeKey(entry.name, entry.song);
+      const idx = state.queue.findIndex((e) => makeKey(e.name, e.song) === key);
+      pushGuestMessage(
+        idx >= 0 ? `Adicionado à fila! Posição #${idx + 1}.` : GUEST_ADDED_TO_QUEUE_MSG,
+        'success',
+        entry.id
+      );
     } catch (e) {
-      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao adicionar à fila.', 'error');
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao adicionar à fila.', 'error', entry.id);
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleRemoveGuestFromQueue = async (entry: KaraokeEntry, queueId: string): Promise<boolean> => {
+    setPendingAction(`guest-fila-${entry.id}`);
+    try {
+      await apiRemoveQueue(queueId);
+      pushGuestMessage(GUEST_REMOVED_FROM_QUEUE_MSG, 'success', entry.id);
+      return true;
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao remover da fila.', 'error', entry.id);
+      return false;
     } finally {
       setPendingAction(null);
     }
@@ -761,6 +818,17 @@ const KaraokePage: React.FC = () => {
     setIsRemoveAllGuestConfirmOpen(false);
   };
 
+  const closeGuestQueueRemoveConfirm = () => {
+    setGuestQueueRemoveConfirm(null);
+  };
+
+  const confirmGuestQueueRemoveFromQueue = async () => {
+    if (!guestQueueRemoveConfirm) return;
+    const { entry, queueId } = guestQueueRemoveConfirm;
+    const ok = await handleRemoveGuestFromQueue(entry, queueId);
+    if (ok) setGuestQueueRemoveConfirm(null);
+  };
+
   const confirmRemoveAllGuestSongs = async () => {
     if (!isDj || guestSongs.length === 0) {
       closeRemoveAllGuestConfirm();
@@ -834,6 +902,7 @@ const KaraokePage: React.FC = () => {
   const closeGuestModal = () => {
     setIsGuestModalOpen(false);
     setIsRemoveAllGuestConfirmOpen(false);
+    setGuestQueueRemoveConfirm(null);
     setSingleGuestError('');
     setBulkErrors([]);
     setBulkAddedCount(null);
@@ -859,6 +928,30 @@ const KaraokePage: React.FC = () => {
     const id = window.setTimeout(() => djPinInputRef.current?.focus(), 0);
     return () => window.clearTimeout(id);
   }, [isDjModalOpen]);
+
+  const renderGuestFeedbackBanner = () => (
+    <div
+      className={`text-sm rounded-xl px-4 py-3 border ${
+        guestActionTone === 'success'
+          ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
+          : 'text-rose-700 bg-rose-50 border-rose-100'
+      }`}
+    >
+      <div className="flex flex-row flex-nowrap items-center justify-between gap-3">
+        <span className="min-w-0 flex-1">{guestActionMessage}</span>
+        {guestActionTone === 'success' &&
+          (guestActionMessage === GUEST_ADDED_TO_QUEUE_MSG || guestActionMessage === GUEST_REMOVED_FROM_QUEUE_MSG) && (
+            <button
+              type="button"
+              onClick={() => setActiveTab('queue')}
+              className="shrink-0 font-semibold text-emerald-800 underline underline-offset-2 decoration-emerald-300 hover:text-emerald-900"
+            >
+              Ver fila
+            </button>
+          )}
+      </div>
+    </div>
+  );
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -1040,28 +1133,7 @@ const KaraokePage: React.FC = () => {
                     <p className="text-sm text-gray-500">Veja as sugestões já registradas para inspirar a noite.</p>
                   </div>
 
-                  {guestActionMessage && (
-                    <div
-                      className={`text-sm rounded-xl px-4 py-3 border ${
-                        guestActionTone === 'success'
-                          ? 'text-emerald-700 bg-emerald-50 border-emerald-100'
-                          : 'text-rose-700 bg-rose-50 border-rose-100'
-                      }`}
-                    >
-                      <div className="flex flex-row flex-nowrap items-center justify-between gap-3">
-                        <span className="min-w-0 flex-1">{guestActionMessage}</span>
-                        {guestActionTone === 'success' && guestActionMessage === GUEST_ADDED_TO_QUEUE_MSG && (
-                          <button
-                            type="button"
-                            onClick={() => setActiveTab('queue')}
-                            className="shrink-0 font-semibold text-emerald-800 underline underline-offset-2 decoration-emerald-300 hover:text-emerald-900"
-                          >
-                            Ver fila
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  )}
+                  {guestActionMessage && guestActionRowId === null ? renderGuestFeedbackBanner() : null}
 
                   <div className={KARAOKE_TABLE_SCROLL_WRAP}>
                     <table className="w-full border-collapse">
@@ -1082,59 +1154,103 @@ const KaraokePage: React.FC = () => {
                             </td>
                           </tr>
                         ) : (
-                          guestSongs.map((entry) => (
-                            <tr key={entry.id} className="border-b border-[#8b5e3c]/10 hover:bg-[#8b5e3c]/5 transition-colors">
-                              <td className="py-3 px-4 text-[#3d2b1f] font-medium">
-                                <span className="block">{entry.name}</span>
-                                <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">
-                                  {entry.song}
-                                </span>
-                              </td>
-                              <td className="hidden md:table-cell py-3 px-4 text-gray-600">{entry.song}</td>
-                              <td className="py-3 px-4">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    type="button"
-                                    disabled={isBusy(`guest-fila-${entry.id}`)}
-                                    aria-busy={isBusy(`guest-fila-${entry.id}`)}
-                                    aria-label="Para fila"
-                                    title="Para fila"
-                                    onClick={() => void handleAddGuestToQueue(entry)}
-                                    className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
-                                  >
-                                    {isBusy(`guest-fila-${entry.id}`) ? (
-                                      <BtnSpinner className="h-3.5 w-3.5" />
-                                    ) : (
-                                      <>
-                                        <ListEnd className="h-4 w-4 md:hidden" aria-hidden />
-                                        <span className="hidden md:inline">Para fila</span>
-                                      </>
-                                    )}
-                                  </button>
-                                  {isDj && (
+                          guestSongs.map((entry) => {
+                            const queueKey = makeKey(entry.name, entry.song);
+                            const queueEntryIdForGuest = queueKeyToId.get(queueKey);
+                            const queueIndex = queueEntryIdForGuest
+                              ? queue.findIndex((q) => q.id === queueEntryIdForGuest)
+                              : -1;
+                            const inQueue = queueIndex >= 0;
+                            const queuePosition = inQueue ? queueIndex + 1 : null;
+                            return (
+                            <React.Fragment key={entry.id}>
+                              <tr className="border-b border-[#8b5e3c]/10 hover:bg-[#8b5e3c]/5 transition-colors">
+                                <td className="py-3 px-4 text-[#3d2b1f] font-medium">
+                                  <span className="block">{entry.name}</span>
+                                  <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">
+                                    {entry.song}
+                                  </span>
+                                </td>
+                                <td className="hidden md:table-cell py-3 px-4 text-gray-600">{entry.song}</td>
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center justify-end gap-2">
                                     <button
                                       type="button"
-                                      disabled={isBusy(`guest-remove-${entry.id}`)}
-                                      aria-busy={isBusy(`guest-remove-${entry.id}`)}
-                                      aria-label="Excluir"
-                                      title="Excluir"
-                                      onClick={() => void handleRemoveGuest(entry.id)}
-                                      className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
+                                      disabled={isBusy(`guest-fila-${entry.id}`)}
+                                      aria-busy={isBusy(`guest-fila-${entry.id}`)}
+                                      aria-label={
+                                        inQueue && queuePosition !== null
+                                          ? `Remover da fila (#${queuePosition})`
+                                          : 'Para fila'
+                                      }
+                                      title={
+                                        inQueue && queuePosition !== null
+                                          ? `Remover da fila (#${queuePosition})`
+                                          : 'Para fila'
+                                      }
+                                      onClick={() => {
+                                        if (!inQueue || !queueEntryIdForGuest || queuePosition === null) {
+                                          void handleAddGuestToQueue(entry);
+                                          return;
+                                        }
+                                        setGuestQueueRemoveConfirm({
+                                          entry,
+                                          queueId: queueEntryIdForGuest,
+                                          position: queuePosition,
+                                        });
+                                      }}
+                                      className="inline-flex items-center justify-center gap-1.5 h-9 min-w-[2.75rem] shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-2 disabled:opacity-60 disabled:pointer-events-none"
                                     >
-                                      {isBusy(`guest-remove-${entry.id}`) ? (
+                                      {isBusy(`guest-fila-${entry.id}`) ? (
                                         <BtnSpinner className="h-3.5 w-3.5" />
                                       ) : (
                                         <>
-                                          <IconTrash className="h-4 w-4 md:hidden" />
-                                          <span className="hidden md:inline">Excluir</span>
+                                          {inQueue && queuePosition !== null ? (
+                                            <span className="tabular-nums font-semibold leading-none normal-case">
+                                              {`#${queuePosition}`}
+                                            </span>
+                                          ) : (
+                                            <>
+                                              <ListEnd className="h-4 w-4 md:hidden" aria-hidden />
+                                              <span className="hidden md:inline">Para fila</span>
+                                            </>
+                                          )}
                                         </>
                                       )}
                                     </button>
-                                  )}
-                                </div>
-                              </td>
-                            </tr>
-                          ))
+                                    {isDj && (
+                                      <button
+                                        type="button"
+                                        disabled={isBusy(`guest-remove-${entry.id}`)}
+                                        aria-busy={isBusy(`guest-remove-${entry.id}`)}
+                                        aria-label="Excluir"
+                                        title="Excluir"
+                                        onClick={() => void handleRemoveGuest(entry.id)}
+                                        className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
+                                      >
+                                        {isBusy(`guest-remove-${entry.id}`) ? (
+                                          <BtnSpinner className="h-3.5 w-3.5" />
+                                        ) : (
+                                          <>
+                                            <IconTrash className="h-4 w-4 md:hidden" />
+                                            <span className="hidden md:inline">Excluir</span>
+                                          </>
+                                        )}
+                                      </button>
+                                    )}
+                                  </div>
+                                </td>
+                              </tr>
+                              {guestActionMessage && guestActionRowId === entry.id ? (
+                                <tr className="border-b border-[#8b5e3c]/10">
+                                  <td colSpan={3} className="px-4 pb-3 pt-1">
+                                    {renderGuestFeedbackBanner()}
+                                  </td>
+                                </tr>
+                              ) : null}
+                            </React.Fragment>
+                          );
+                          })
                         )}
                       </tbody>
                     </table>
@@ -1328,6 +1444,14 @@ const KaraokePage: React.FC = () => {
                         {isBusy('queue') ? 'Enviando…' : 'Entrar na fila'}
                       </button>
                     </form>
+                    {queueJoinBannerPosition !== null ? (
+                      <p
+                        role="status"
+                        className="mt-3 rounded-xl border border-[#8b5e3c]/20 bg-[#f4f7ef] px-4 py-3 text-sm text-[#3d2b1f]"
+                      >
+                        Adicionado à fila! Posição #{queueJoinBannerPosition}.
+                      </p>
+                    ) : null}
                     {queueError && <p className="mt-3 text-sm text-rose-600">{queueError}</p>}
                   </div>
 
@@ -1573,6 +1697,55 @@ const KaraokePage: React.FC = () => {
               >
                 {isBusy('guest-clear-all') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
                 {isBusy('guest-clear-all') ? 'Removendo…' : 'Remover tudo'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {guestQueueRemoveConfirm && (
+        <div
+          className="fixed inset-0 z-[56] flex items-center justify-center p-4 bg-black/60"
+          onClick={closeGuestQueueRemoveConfirm}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-6 md:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="guest-queue-remove-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 id="guest-queue-remove-title" className="text-xl font-serif text-[#3d2b1f] mb-2">
+              Remover da fila?
+            </h3>
+            <p className="text-sm text-[#3d2b1f] font-medium mb-1">
+              {guestQueueRemoveConfirm.entry.name}
+              <span className="text-gray-400 font-normal"> · </span>
+              {guestQueueRemoveConfirm.entry.song}
+            </p>
+            <p className="text-sm text-gray-600 mb-6">
+              Posição {guestQueueRemoveConfirm.position} na fila. Remover esta inscrição?
+            </p>
+            <div className="flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeGuestQueueRemoveConfirm}
+                disabled={isBusy(`guest-fila-${guestQueueRemoveConfirm.entry.id}`)}
+                className="inline-flex items-center justify-center min-h-[2.75rem] px-5 py-2.5 rounded-xl border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-sm font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmGuestQueueRemoveFromQueue()}
+                disabled={isBusy(`guest-fila-${guestQueueRemoveConfirm.entry.id}`)}
+                aria-busy={isBusy(`guest-fila-${guestQueueRemoveConfirm.entry.id}`)}
+                className="inline-flex items-center justify-center gap-2 min-h-[2.75rem] px-5 py-2.5 rounded-xl bg-rose-600 text-white font-semibold text-sm uppercase tracking-wide hover:bg-rose-700 transition-colors disabled:opacity-70 disabled:pointer-events-none"
+              >
+                {isBusy(`guest-fila-${guestQueueRemoveConfirm.entry.id}`) ? (
+                  <BtnSpinner className="h-4 w-4 text-white" />
+                ) : null}
+                {isBusy(`guest-fila-${guestQueueRemoveConfirm.entry.id}`) ? 'Removendo…' : 'Remover'}
               </button>
             </div>
           </div>
