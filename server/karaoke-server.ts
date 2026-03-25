@@ -94,8 +94,9 @@ export async function buildApp() {
     return { ok: true };
   });
 
+  /** Single path segment (no `/bulk`) — Vercel file routing + catch-all can 404 on multi-segment paths. */
   fastify.post<{ Body: { entries?: { name: string; song: string }[] } }>(
-    '/api/karaoke/guest-songs/bulk',
+    '/api/karaoke/guest-songs-bulk',
     async (request, reply) => {
       const entries = request.body?.entries;
       if (!Array.isArray(entries) || entries.length === 0) {
@@ -133,7 +134,7 @@ export async function buildApp() {
     return { ok: true };
   });
 
-  fastify.post<{ Body: { songs?: string[] } }>('/api/karaoke/other-songs/bulk', async (request, reply) => {
+  fastify.post<{ Body: { songs?: string[] } }>('/api/karaoke/other-songs-bulk', async (request, reply) => {
     const songs = request.body?.songs;
     if (!Array.isArray(songs) || songs.length === 0) {
       return reply.code(400).send({ error: 'songs obrigatório' });
@@ -157,7 +158,7 @@ export async function buildApp() {
   });
 
   fastify.post<{ Body: { ids?: string[] } }>(
-    '/api/karaoke/queue/reorder',
+    '/api/karaoke/queue-reorder',
     async (request, reply) => {
       if (!(await requireDj(request.headers.authorization))) {
         return reply.code(401).send({ error: 'Acesso de DJ necessário' });
@@ -176,7 +177,7 @@ export async function buildApp() {
     }
   );
 
-  fastify.post<{ Body: { id?: string } }>('/api/karaoke/queue/skip', async (request, reply) => {
+  fastify.post<{ Body: { id?: string } }>('/api/karaoke/queue-skip', async (request, reply) => {
     if (!(await requireDj(request.headers.authorization))) {
       return reply.code(401).send({ error: 'Acesso de DJ necessário' });
     }
@@ -186,28 +187,33 @@ export async function buildApp() {
     return { ok: true };
   });
 
-  fastify.delete<{ Params: { id: string } }>('/api/karaoke/queue/:id', async (request, reply) => {
+  fastify.post<{ Body: { id?: string } }>('/api/karaoke/queue-remove', async (request, reply) => {
     if (!(await requireDj(request.headers.authorization))) {
       return reply.code(401).send({ error: 'Acesso de DJ necessário' });
     }
-    const id = request.params.id;
+    const id = request.body?.id;
+    if (!id) return reply.code(400).send({ error: 'id é obrigatório' });
     await db.deleteQueueEntry(id);
     return { ok: true };
   });
 
-  fastify.delete<{ Params: { id: string } }>('/api/karaoke/guest-songs/:id', async (request, reply) => {
+  fastify.post<{ Body: { id?: string } }>('/api/karaoke/guest-songs-remove', async (request, reply) => {
     if (!(await requireDj(request.headers.authorization))) {
       return reply.code(401).send({ error: 'Acesso de DJ necessário' });
     }
-    await db.deleteGuestSong(request.params.id);
+    const id = request.body?.id;
+    if (!id) return reply.code(400).send({ error: 'id é obrigatório' });
+    await db.deleteGuestSong(id);
     return { ok: true };
   });
 
-  fastify.delete<{ Params: { id: string } }>('/api/karaoke/other-songs/:id', async (request, reply) => {
+  fastify.post<{ Body: { id?: string } }>('/api/karaoke/other-songs-remove', async (request, reply) => {
     if (!(await requireDj(request.headers.authorization))) {
       return reply.code(401).send({ error: 'Acesso de DJ necessário' });
     }
-    await db.deleteOtherSong(request.params.id);
+    const id = request.body?.id;
+    if (!id) return reply.code(400).send({ error: 'id é obrigatório' });
+    await db.deleteOtherSong(id);
     return { ok: true };
   });
 

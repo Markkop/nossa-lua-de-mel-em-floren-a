@@ -3,8 +3,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { buildApp } from '../../server/karaoke-server.js';
 
 /**
- * `/api/karaoke/*` — do not use a root `api/[...path].ts`; it can break Vercel routing.
- * DJ login is `POST /api/karaoke/dj-auth` (not `.../auth/dj`) to avoid `auth` segment issues.
+ * `/api/karaoke/*` — Fastify handles all karaoke routes. Routes use a single path segment
+ * after `/api/karaoke/` (e.g. `guest-songs-bulk`, not `guest-songs/bulk`) so Vercel’s
+ * file router does not 404 on multi-segment paths. Do not use a root `api/[...path].ts`.
  */
 let appPromise: ReturnType<typeof buildApp> | null = null;
 

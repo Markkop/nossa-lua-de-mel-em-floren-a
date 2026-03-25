@@ -61,7 +61,7 @@ export async function postGuestSongsBulk(entries: { name: string; song: string }
   added: number;
   errors: string[];
 }> {
-  const res = await fetch(apiUrl('/api/karaoke/guest-songs/bulk'), {
+  const res = await fetch(apiUrl('/api/karaoke/guest-songs-bulk'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ entries }),
@@ -80,7 +80,7 @@ export async function postOtherSong(song: string): Promise<void> {
 }
 
 export async function postOtherSongsBulk(songs: string[]): Promise<{ added: number; errors: string[] }> {
-  const res = await fetch(apiUrl('/api/karaoke/other-songs/bulk'), {
+  const res = await fetch(apiUrl('/api/karaoke/other-songs-bulk'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ songs }),
@@ -96,7 +96,7 @@ function authHeaders(token: string | null): HeadersInit {
 }
 
 export async function postQueueReorder(ids: string[], token: string): Promise<void> {
-  const res = await fetch(apiUrl('/api/karaoke/queue/reorder'), {
+  const res = await fetch(apiUrl('/api/karaoke/queue-reorder'), {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ ids }),
@@ -105,7 +105,7 @@ export async function postQueueReorder(ids: string[], token: string): Promise<vo
 }
 
 export async function postQueueSkip(id: string, token: string): Promise<void> {
-  const res = await fetch(apiUrl('/api/karaoke/queue/skip'), {
+  const res = await fetch(apiUrl('/api/karaoke/queue-skip'), {
     method: 'POST',
     headers: authHeaders(token),
     body: JSON.stringify({ id }),
@@ -114,25 +114,28 @@ export async function postQueueSkip(id: string, token: string): Promise<void> {
 }
 
 export async function deleteQueueEntry(id: string, token: string): Promise<void> {
-  const res = await fetch(apiUrl(`/api/karaoke/queue/${encodeURIComponent(id)}`), {
-    method: 'DELETE',
+  const res = await fetch(apiUrl('/api/karaoke/queue-remove'), {
+    method: 'POST',
     headers: authHeaders(token),
+    body: JSON.stringify({ id }),
   });
   if (!res.ok) throw new Error(await parseError(res));
 }
 
 export async function deleteGuestSong(id: string, token: string): Promise<void> {
-  const res = await fetch(apiUrl(`/api/karaoke/guest-songs/${encodeURIComponent(id)}`), {
-    method: 'DELETE',
+  const res = await fetch(apiUrl('/api/karaoke/guest-songs-remove'), {
+    method: 'POST',
     headers: authHeaders(token),
+    body: JSON.stringify({ id }),
   });
   if (!res.ok) throw new Error(await parseError(res));
 }
 
 export async function deleteOtherSong(id: string, token: string): Promise<void> {
-  const res = await fetch(apiUrl(`/api/karaoke/other-songs/${encodeURIComponent(id)}`), {
-    method: 'DELETE',
+  const res = await fetch(apiUrl('/api/karaoke/other-songs-remove'), {
+    method: 'POST',
     headers: authHeaders(token),
+    body: JSON.stringify({ id }),
   });
   if (!res.ok) throw new Error(await parseError(res));
 }
