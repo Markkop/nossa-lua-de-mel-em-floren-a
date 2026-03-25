@@ -113,6 +113,15 @@ export async function postQueueSkip(id: string, token: string): Promise<void> {
   if (!res.ok) throw new Error(await parseError(res));
 }
 
+export async function postQueueMoveToNext(id: string, token: string): Promise<void> {
+  const res = await fetch(apiUrl('/api/karaoke/queue-move-to-next'), {
+    method: 'POST',
+    headers: authHeaders(token),
+    body: JSON.stringify({ id }),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+}
+
 export async function deleteQueueEntry(id: string, token: string): Promise<void> {
   const res = await fetch(apiUrl('/api/karaoke/queue-remove'), {
     method: 'POST',

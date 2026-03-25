@@ -187,6 +187,16 @@ export async function buildApp() {
     return { ok: true };
   });
 
+  fastify.post<{ Body: { id?: string } }>('/api/karaoke/queue-move-to-next', async (request, reply) => {
+    if (!(await requireDj(request.headers.authorization))) {
+      return reply.code(401).send({ error: 'Acesso de DJ necessário' });
+    }
+    const id = request.body?.id;
+    if (!id) return reply.code(400).send({ error: 'id é obrigatório' });
+    await db.moveQueueEntryToNext(id);
+    return { ok: true };
+  });
+
   fastify.post<{ Body: { id?: string } }>('/api/karaoke/queue-remove', async (request, reply) => {
     if (!(await requireDj(request.headers.authorization))) {
       return reply.code(401).send({ error: 'Acesso de DJ necessário' });

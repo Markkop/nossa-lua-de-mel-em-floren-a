@@ -13,6 +13,7 @@ import {
   postOtherSong,
   postOtherSongsBulk,
   postQueue,
+  postQueueMoveToNext,
   postQueueReorder,
   postQueueSkip,
 } from '@/utils/karaoke-api';
@@ -155,6 +156,15 @@ export function useKaraokeSync() {
     [djToken, refreshState]
   );
 
+  const moveQueueToNext = useCallback(
+    async (id: string) => {
+      if (!djToken) throw new Error('Modo DJ necessário');
+      await postQueueMoveToNext(id, djToken);
+      await refreshState();
+    },
+    [djToken, refreshState]
+  );
+
   const removeQueue = useCallback(
     async (id: string) => {
       if (!djToken) throw new Error('Modo DJ necessário');
@@ -207,6 +217,7 @@ export function useKaraokeSync() {
     addOtherBulk,
     reorderQueue,
     skipQueue,
+    moveQueueToNext,
     removeQueue,
     removeGuest,
     removeAllGuestSongs,

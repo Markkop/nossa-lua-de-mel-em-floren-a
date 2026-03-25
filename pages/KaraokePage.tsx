@@ -3,7 +3,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 
-import { Lock, LockOpen } from 'lucide-react';
+import { GripVertical, ListEnd, Lock, LockOpen, SkipForward } from 'lucide-react';
 
 import { useKaraokeSync } from '@/hooks/useKaraokeSync';
 
@@ -33,6 +33,9 @@ type SongSuggestion = {
 
 const normalizeText = (value: string) => value.trim().replace(/\s+/g, ' ');
 const makeKey = (name: string, song: string) => `${normalizeText(name)}::${normalizeText(song)}`;
+
+/** Cancels parent `px-6` on mobile so tables span the card width; desktop unchanged. */
+const KARAOKE_TABLE_SCROLL_WRAP = 'overflow-x-auto -mx-6 md:mx-0';
 
 const BtnSpinner: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
   <svg
@@ -69,39 +72,6 @@ const IconTrash: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) 
   </svg>
 );
 
-const IconSkipForward: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    aria-hidden
-  >
-    <path
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      d="M3 8.688c0-.864.933-1.405 1.683-.977l7.108 4.062a1.125 1.125 0 010 1.953l-7.108 4.062A1.125 1.125 0 013 16.81V8.688zM12.75 8.688c0-.864.933-1.405 1.683-.977l7.108 4.062a1.125 1.125 0 010 1.953l-7.108 4.062a1.125 1.125 0 01-1.683-.977V8.688z"
-    />
-  </svg>
-);
-
-const IconQueueAdd: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
-  <svg
-    className={className}
-    xmlns="http://www.w3.org/2000/svg"
-    fill="none"
-    viewBox="0 0 24 24"
-    strokeWidth={1.5}
-    stroke="currentColor"
-    aria-hidden
-  >
-    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h6" />
-    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 13.5v6m-3-3h6" />
-  </svg>
-);
-
 type QueueRowProps = {
   item: KaraokeEntry;
   index: number;
@@ -110,8 +80,10 @@ type QueueRowProps = {
   isDj: boolean;
   dragDisabled: boolean;
   skipLoading: boolean;
+  moveToNextLoading: boolean;
   removeLoading: boolean;
   onSkip: (id: string) => void;
+  onMoveToNext: (id: string) => void;
   onRemove: (id: string) => void;
 };
 
@@ -123,10 +95,13 @@ const QueueRow: React.FC<QueueRowProps> = ({
   isDj,
   dragDisabled,
   skipLoading,
+  moveToNextLoading,
   removeLoading,
   onSkip,
+  onMoveToNext,
   onRemove,
 }) => {
+  const queueActionBusy = skipLoading || moveToNextLoading || removeLoading;
   const rowRef = useRef<HTMLTableRowElement | null>(null);
   const desktopDragRef = useRef<HTMLButtonElement | null>(null);
   const mobileDragRef = useRef<HTMLButtonElement | null>(null);
@@ -195,33 +170,48 @@ const QueueRow: React.FC<QueueRowProps> = ({
         {isDj ? (
           <div className="md:hidden mt-3 pt-3 border-t border-[#8b5e3c]/10 flex flex-wrap items-center gap-2">
             <button
-              ref={mobileDragRef}
               type="button"
-              disabled={dragDisabled || skipLoading || removeLoading}
-              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Arrastar para reordenar"
-              aria-label="Arrastar para reordenar"
+              disabled={queueActionBusy}
+              aria-busy={moveToNextLoading}
+              aria-label="Próximo na fila"
+              title="Tornar o próximo da fila (logo após quem está cantando)"
+              onClick={() => void onMoveToNext(item.id)}
+              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/25 text-[#6b4a2f] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
             >
-              ⇅
+              {moveToNextLoading ? (
+                <BtnSpinner className="h-3.5 w-3.5" />
+              ) : (
+                <SkipForward className="h-4 w-4" aria-hidden />
+              )}
             </button>
             <button
               type="button"
-              disabled={skipLoading || removeLoading}
+              disabled={queueActionBusy}
               aria-busy={skipLoading}
-              aria-label="Pular"
-              title="Pular"
+              aria-label="Pular para o fim da fila"
+              title="Pular para o fim da fila"
               onClick={() => void onSkip(item.id)}
               className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
             >
               {skipLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
               ) : (
-                <IconSkipForward className="h-4 w-4" />
+                <ListEnd className="h-4 w-4" aria-hidden />
               )}
             </button>
             <button
+              ref={mobileDragRef}
               type="button"
-              disabled={skipLoading || removeLoading}
+              disabled={dragDisabled || queueActionBusy}
+              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Arrastar para reordenar"
+              aria-label="Arrastar para reordenar"
+            >
+              <GripVertical className="h-4 w-4" aria-hidden strokeWidth={1.75} />
+            </button>
+            <button
+              type="button"
+              disabled={queueActionBusy}
               aria-busy={removeLoading}
               aria-label="Excluir"
               title="Excluir"
@@ -240,40 +230,61 @@ const QueueRow: React.FC<QueueRowProps> = ({
       <td className="hidden md:table-cell py-3 px-4 text-gray-600">{item.song}</td>
       {isDj ? (
         <td className="hidden md:table-cell py-3 px-4">
-          <div className="flex items-center justify-end gap-2">
-            <button
-              ref={desktopDragRef}
-              type="button"
-              disabled={dragDisabled || skipLoading || removeLoading}
-              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Arrastar para reordenar"
-              aria-label="Arrastar para reordenar"
-            >
-              ⇅
-            </button>
+          <div className="flex flex-wrap items-center justify-end gap-2">
             <button
               type="button"
-              disabled={skipLoading || removeLoading}
-              aria-busy={skipLoading}
-              aria-label="Pular"
-              title="Pular"
-              onClick={() => void onSkip(item.id)}
-              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide min-w-[5.5rem] w-auto px-4 disabled:opacity-60 disabled:pointer-events-none"
+              disabled={queueActionBusy}
+              aria-busy={moveToNextLoading}
+              aria-label="Próximo na fila"
+              title="Tornar o próximo da fila (logo após quem está cantando)"
+              onClick={() => void onMoveToNext(item.id)}
+              className="inline-flex items-center justify-center gap-1.5 min-h-9 min-w-[5.5rem] shrink-0 rounded-full border border-[#8b5e3c]/25 text-[#6b4a2f] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide px-4 disabled:opacity-60 disabled:pointer-events-none"
             >
-              {skipLoading ? (
+              {moveToNextLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
               ) : (
-                <span>Pular</span>
+                <>
+                  <SkipForward className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  <span>Próximo</span>
+                </>
               )}
             </button>
             <button
               type="button"
-              disabled={skipLoading || removeLoading}
+              disabled={queueActionBusy}
+              aria-busy={skipLoading}
+              aria-label="Pular para o fim da fila"
+              title="Pular para o fim da fila"
+              onClick={() => void onSkip(item.id)}
+              className="inline-flex items-center justify-center gap-1.5 min-h-9 min-w-[5.5rem] shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide px-4 disabled:opacity-60 disabled:pointer-events-none"
+            >
+              {skipLoading ? (
+                <BtnSpinner className="h-3.5 w-3.5" />
+              ) : (
+                <>
+                  <ListEnd className="h-3.5 w-3.5 shrink-0" aria-hidden />
+                  <span>Pular</span>
+                </>
+              )}
+            </button>
+            <button
+              ref={desktopDragRef}
+              type="button"
+              disabled={dragDisabled || queueActionBusy}
+              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Arrastar para reordenar"
+              aria-label="Arrastar para reordenar"
+            >
+              <GripVertical className="h-4 w-4" aria-hidden strokeWidth={1.75} />
+            </button>
+            <button
+              type="button"
+              disabled={queueActionBusy}
               aria-busy={removeLoading}
               aria-label="Excluir"
               title="Excluir"
               onClick={() => void onRemove(item.id)}
-              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide min-w-[5.5rem] w-auto px-4 disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center gap-1.5 min-h-9 min-w-[5.5rem] shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide px-4 disabled:opacity-60 disabled:pointer-events-none"
             >
               {removeLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
@@ -305,6 +316,7 @@ const KaraokePage: React.FC = () => {
     addOtherBulk,
     reorderQueue: apiReorderQueue,
     skipQueue: apiSkipQueue,
+    moveQueueToNext: apiMoveQueueToNext,
     removeQueue: apiRemoveQueue,
     removeGuest: apiRemoveGuest,
     removeAllGuestSongs: apiRemoveAllGuestSongs,
@@ -541,6 +553,17 @@ const KaraokePage: React.FC = () => {
       await apiSkipQueue(id);
     } catch (e) {
       pushGuestMessage(e instanceof Error ? e.message : 'Erro ao pular.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleMoveQueueToNext = async (id: string) => {
+    setPendingAction(`move-to-next-${id}`);
+    try {
+      await apiMoveQueueToNext(id);
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao mover para o próximo.', 'error');
     } finally {
       setPendingAction(null);
     }
@@ -1013,7 +1036,7 @@ const KaraokePage: React.FC = () => {
                     </div>
                   )}
 
-                  <div className="overflow-x-auto">
+                  <div className={KARAOKE_TABLE_SCROLL_WRAP}>
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
@@ -1056,7 +1079,7 @@ const KaraokePage: React.FC = () => {
                                       <BtnSpinner className="h-3.5 w-3.5" />
                                     ) : (
                                       <>
-                                        <IconQueueAdd className="h-4 w-4 md:hidden" />
+                                        <ListEnd className="h-4 w-4 md:hidden" aria-hidden />
                                         <span className="hidden md:inline">Para fila</span>
                                       </>
                                     )}
@@ -1099,7 +1122,7 @@ const KaraokePage: React.FC = () => {
                     <p className="text-sm text-gray-500">Lista livre para outras sugestões sem convidado específico.</p>
                   </div>
 
-                  <div className="overflow-x-auto">
+                  <div className={KARAOKE_TABLE_SCROLL_WRAP}>
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
@@ -1281,7 +1304,7 @@ const KaraokePage: React.FC = () => {
                     {queueError && <p className="mt-3 text-sm text-rose-600">{queueError}</p>}
                   </div>
 
-                  <div className="overflow-x-auto">
+                  <div className={KARAOKE_TABLE_SCROLL_WRAP}>
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
@@ -1317,8 +1340,10 @@ const KaraokePage: React.FC = () => {
                               isDj={isDj}
                               dragDisabled={pendingAction === 'reorder'}
                               skipLoading={isBusy(`skip-${entry.id}`)}
+                              moveToNextLoading={isBusy(`move-to-next-${entry.id}`)}
                               removeLoading={isBusy(`remove-q-${entry.id}`)}
                               onSkip={handleSkipQueue}
+                              onMoveToNext={handleMoveQueueToNext}
                               onRemove={handleRemoveQueue}
                             />
                           ))

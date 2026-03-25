@@ -113,6 +113,18 @@ export async function skipQueueEntry(id: string): Promise<void> {
   `;
 }
 
+/** Move entry to be "Próximo" (index 1): immediately after who is singing now, not the end of the queue. */
+export async function moveQueueEntryToNext(id: string): Promise<void> {
+  const state = await loadState();
+  const ids = state.queue.map((q) => q.id);
+  const from = ids.indexOf(id);
+  if (from === -1) return;
+  const without = ids.filter((x) => x !== id);
+  const insertAt = Math.min(1, without.length);
+  const newIds = [...without.slice(0, insertAt), id, ...without.slice(insertAt)];
+  await reorderQueue(newIds);
+}
+
 export async function reorderQueue(ids: string[]): Promise<void> {
   const statements = ids.map(
     (id, index) => sql`UPDATE karaoke_queue SET sort_order = ${index} WHERE id = ${id}::uuid`
