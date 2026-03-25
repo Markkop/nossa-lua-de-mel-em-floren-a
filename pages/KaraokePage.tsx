@@ -3,7 +3,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 
-import { GripVertical, ListEnd, Lock, LockOpen, SkipForward } from 'lucide-react';
+import { GripVertical, ListEnd, Lock, LockOpen, Menu, Music, SkipForward } from 'lucide-react';
 
 import { useKaraokeSync } from '@/hooks/useKaraokeSync';
 
@@ -33,6 +33,8 @@ type SongSuggestion = {
 
 const normalizeText = (value: string) => value.trim().replace(/\s+/g, ' ');
 const makeKey = (name: string, song: string) => `${normalizeText(name)}::${normalizeText(song)}`;
+
+const GUEST_ADDED_TO_QUEUE_MSG = 'Adicionado à fila!';
 
 /** Cancels parent `px-6` on mobile so tables span the card width; desktop unchanged. */
 const KARAOKE_TABLE_SCROLL_WRAP = 'overflow-x-auto -mx-6 md:mx-0';
@@ -321,7 +323,8 @@ const KaraokePage: React.FC = () => {
   const queueRef = useRef(queue);
   queueRef.current = queue;
 
-  const [activeTab, setActiveTab] = useState<'guest' | 'queue' | 'other'>('queue');
+  const [activeTab, setActiveTab] = useState<'queue' | 'music'>('queue');
+  const [musicSubTab, setMusicSubTab] = useState<'guest' | 'other'>('guest');
   const [queueName, setQueueName] = useState('');
   const [queueSong, setQueueSong] = useState('');
   const [queueError, setQueueError] = useState('');
@@ -522,7 +525,7 @@ const KaraokePage: React.FC = () => {
     setPendingAction(actionKey);
     try {
       await apiAddQueue(entry.name, entry.song);
-      pushGuestMessage('Adicionado à fila!', 'success');
+      pushGuestMessage(GUEST_ADDED_TO_QUEUE_MSG, 'success');
     } catch (e) {
       pushGuestMessage(e instanceof Error ? e.message : 'Erro ao adicionar à fila.', 'error');
     } finally {
@@ -891,40 +894,35 @@ const KaraokePage: React.FC = () => {
       <section className="py-16 bg-[#fdfbf7] px-4">
         <div className="max-w-5xl mx-auto">
           <div className="bg-white rounded-[32px] border border-[#8b5e3c]/15 shadow-[0_30px_80px_-50px_rgba(61,43,31,0.35)] overflow-hidden">
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 md:px-10 py-6 border-b border-[#8b5e3c]/10 bg-[#fbf7f1]">
-              <div className="flex flex-wrap gap-3 items-center">
+            <div className="border-b border-[#8b5e3c]/10 bg-[#fbf7f1]">
+              <div className="flex flex-wrap gap-3 items-center px-6 md:px-10 py-6">
                 <button
                   type="button"
                   onClick={() => setActiveTab('queue')}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold uppercase tracking-wide transition-colors ${
+                  aria-label="Fila"
+                  title="Fila"
+                  className={`inline-flex items-center justify-center rounded-full text-sm font-semibold uppercase tracking-wide transition-colors h-11 w-11 shrink-0 md:w-auto md:px-5 md:py-2 ${
                     activeTab === 'queue'
                       ? 'bg-[#8b5e3c] text-white'
                       : 'border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10'
                   }`}
                 >
-                  Inscrições
+                  <Menu className="h-5 w-5 shrink-0 md:hidden" aria-hidden strokeWidth={2} />
+                  <span className="hidden md:inline">Fila</span>
                 </button>
                 <button
                   type="button"
-                  onClick={() => setActiveTab('guest')}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold uppercase tracking-wide transition-colors ${
-                    activeTab === 'guest'
+                  onClick={() => setActiveTab('music')}
+                  aria-label="Músicas"
+                  title="Músicas"
+                  className={`inline-flex items-center justify-center rounded-full text-sm font-semibold uppercase tracking-wide transition-colors h-11 w-11 shrink-0 md:w-auto md:px-5 md:py-2 ${
+                    activeTab === 'music'
                       ? 'bg-[#8b5e3c] text-white'
                       : 'border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10'
                   }`}
                 >
-                  Músicas dos Convidados
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('other')}
-                  className={`px-5 py-2 rounded-full text-sm font-semibold uppercase tracking-wide transition-colors ${
-                    activeTab === 'other'
-                      ? 'bg-[#8b5e3c] text-white'
-                      : 'border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10'
-                  }`}
-                >
-                  Outras músicas
+                  <Music className="h-5 w-5 shrink-0 md:hidden" aria-hidden strokeWidth={2} />
+                  <span className="hidden md:inline">Músicas</span>
                 </button>
                 {isDj ? (
                   <button
@@ -983,18 +981,42 @@ const KaraokePage: React.FC = () => {
                   )}
                 </button>
               </div>
-              {(activeTab === 'guest' || activeTab === 'other') && (
-                <div className="flex items-center gap-2 shrink-0">
+              {activeTab === 'music' && (
+                <div className="flex flex-wrap items-center justify-between gap-2 px-6 md:px-10 pb-4 pt-0">
+                  <div className="flex flex-wrap gap-2 items-center">
+                    <button
+                      type="button"
+                      onClick={() => setMusicSubTab('guest')}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide transition-colors ${
+                        musicSubTab === 'guest'
+                          ? 'bg-[#8b5e3c] text-white'
+                          : 'border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10'
+                      }`}
+                    >
+                      Convidados
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMusicSubTab('other')}
+                      className={`px-4 py-2 rounded-full text-sm font-semibold uppercase tracking-wide transition-colors ${
+                        musicSubTab === 'other'
+                          ? 'bg-[#8b5e3c] text-white'
+                          : 'border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10'
+                      }`}
+                    >
+                      Outras
+                    </button>
+                  </div>
                   <button
                     type="button"
                     onClick={() =>
-                      activeTab === 'guest' ? setIsGuestModalOpen(true) : setIsOtherModalOpen(true)
+                      musicSubTab === 'guest' ? setIsGuestModalOpen(true) : setIsOtherModalOpen(true)
                     }
-                    className="h-11 w-11 rounded-full bg-[#8b5e3c] text-white text-2xl font-light shadow-lg hover:bg-[#6f4b30] transition-colors"
+                    className="h-11 w-11 shrink-0 rounded-full bg-[#8b5e3c] text-white text-2xl font-light shadow-lg hover:bg-[#6f4b30] transition-colors"
                     aria-label={
-                      activeTab === 'guest' ? 'Adicionar músicas dos convidados' : 'Adicionar outras músicas'
+                      musicSubTab === 'guest' ? 'Adicionar músicas dos convidados' : 'Adicionar outras músicas'
                     }
-                    title={activeTab === 'guest' ? 'Adicionar músicas dos convidados' : 'Adicionar outras músicas'}
+                    title={musicSubTab === 'guest' ? 'Adicionar músicas dos convidados' : 'Adicionar outras músicas'}
                   >
                     +
                   </button>
@@ -1011,7 +1033,7 @@ const KaraokePage: React.FC = () => {
               {isLoading && (
                 <div className="mb-6 text-center text-sm text-gray-500">Carregando dados do karaokê…</div>
               )}
-              {activeTab === 'guest' && (
+              {activeTab === 'music' && musicSubTab === 'guest' && (
                 <div className="space-y-6">
                   <div className="text-center">
                     <h2 className="text-3xl md:text-4xl font-serif text-[#3d2b1f] mb-3">Músicas dos Convidados</h2>
@@ -1026,7 +1048,18 @@ const KaraokePage: React.FC = () => {
                           : 'text-rose-700 bg-rose-50 border-rose-100'
                       }`}
                     >
-                      {guestActionMessage}
+                      <div className="flex flex-row flex-nowrap items-center justify-between gap-3">
+                        <span className="min-w-0 flex-1">{guestActionMessage}</span>
+                        {guestActionTone === 'success' && guestActionMessage === GUEST_ADDED_TO_QUEUE_MSG && (
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('queue')}
+                            className="shrink-0 font-semibold text-emerald-800 underline underline-offset-2 decoration-emerald-300 hover:text-emerald-900"
+                          >
+                            Ver fila
+                          </button>
+                        )}
+                      </div>
                     </div>
                   )}
 
@@ -1109,7 +1142,7 @@ const KaraokePage: React.FC = () => {
                 </div>
               )}
 
-              {activeTab === 'other' && (
+              {activeTab === 'music' && musicSubTab === 'other' && (
                 <div className="space-y-6">
                   <div className="text-center">
                     <h2 className="text-3xl md:text-4xl font-serif text-[#3d2b1f] mb-3">Outras músicas</h2>
@@ -1173,7 +1206,7 @@ const KaraokePage: React.FC = () => {
               {activeTab === 'queue' && (
                 <div className="space-y-8">
                   <div className="text-center">
-                    <h2 className="text-3xl md:text-4xl font-serif text-[#3d2b1f] mb-3">Inscrições</h2>
+                    <h2 className="text-3xl md:text-4xl font-serif text-[#3d2b1f] mb-3">Fila</h2>
                     <p className="text-sm text-gray-500">Digite seu nome e a música para entrar na fila.</p>
                   </div>
 
