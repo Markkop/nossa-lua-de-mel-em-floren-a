@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import type { KaraokeEntry, KaraokeState, OtherSong } from '@/utils/karaoke-api';
 import {
+  deleteAllGuestSongs,
   deleteGuestSong,
   deleteOtherSong,
   deleteQueueEntry,
@@ -18,7 +19,8 @@ import {
 
 const DJ_TOKEN_KEY = 'karaoke_dj_token';
 
-const DEFAULT_POLL_MS = 2500;
+/** Default ~1 min; override with VITE_KARAOKE_POLL_MS (milliseconds, min 1000). */
+const DEFAULT_POLL_MS = 60_000;
 
 function getPollIntervalMs(): number {
   const raw = import.meta.env.VITE_KARAOKE_POLL_MS;
@@ -48,6 +50,15 @@ export function useKaraokeSync() {
     setLoadError(null);
   }, [applyState]);
 
+  /** Same fetch as polling; sets loadError on failure (does not throw). */
+  const refreshKaraoke = useCallback(async () => {
+    try {
+      await refreshState();
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : 'Não foi possível sincronizar o karaokê.');
+    }
+  }, [refreshState]);
+
   const setDjToken = useCallback((token: string) => {
     setDjTokenState(token);
     if (token) sessionStorage.setItem(DJ_TOKEN_KEY, token);
@@ -63,17 +74,10 @@ export function useKaraokeSync() {
     const pollMs = getPollIntervalMs();
 
     const tick = async () => {
-      try {
-        await refreshState();
-      } catch (e) {
-        if (!cancelled) {
-          setLoadError(e instanceof Error ? e.message : 'Não foi possível sincronizar o karaokê.');
-        }
-      } finally {
-        if (!cancelled && !initialLoadDone.current) {
-          initialLoadDone.current = true;
-          setIsLoading(false);
-        }
+      await refreshKaraoke();
+      if (!cancelled && !initialLoadDone.current) {
+        initialLoadDone.current = true;
+        setIsLoading(false);
       }
     };
 
@@ -86,7 +90,7 @@ export function useKaraokeSync() {
       cancelled = true;
       window.clearInterval(id);
     };
-  }, [refreshState]);
+  }, [refreshKaraoke]);
 
   const loginDj = useCallback(
     async (pin: string) => {
@@ -165,6 +169,12 @@ export function useKaraokeSync() {
     [djToken, refreshState]
   );
 
+  const removeAllGuestSongs = useCallback(async () => {
+    if (!djToken) throw new Error('Modo DJ necessário');
+    await deleteAllGuestSongs(djToken);
+    await refreshState();
+  }, [djToken, refreshState]);
+
   const removeOther = useCallback(
     async (id: string) => {
       if (!djToken) throw new Error('Modo DJ necessário');
@@ -195,7 +205,9 @@ export function useKaraokeSync() {
     skipQueue,
     removeQueue,
     removeGuest,
+    removeAllGuestSongs,
     removeOther,
     refreshState,
+    refreshKaraoke,
   };
 }

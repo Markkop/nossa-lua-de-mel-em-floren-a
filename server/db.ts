@@ -76,6 +76,13 @@ export async function deleteGuestSong(id: string): Promise<boolean> {
   return rows.length > 0;
 }
 
+export async function deleteAllGuestSongs(): Promise<number> {
+  const rows = await sql`
+    DELETE FROM karaoke_guest_songs RETURNING id
+  `;
+  return rows.length;
+}
+
 export async function deleteOtherSong(id: string): Promise<boolean> {
   const rows = await sql`
     DELETE FROM karaoke_other_songs WHERE id = ${id}::uuid RETURNING id::text AS id

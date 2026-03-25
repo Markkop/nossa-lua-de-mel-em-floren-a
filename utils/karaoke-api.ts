@@ -131,6 +131,17 @@ export async function deleteGuestSong(id: string, token: string): Promise<void> 
   if (!res.ok) throw new Error(await parseError(res));
 }
 
+export async function deleteAllGuestSongs(token: string): Promise<{ removed: number }> {
+  const res = await fetch(apiUrl('/api/karaoke/guest-songs-clear'), {
+    method: 'POST',
+    headers: authHeaders(token),
+    // Empty JSON object: Fastify rejects POST+application/json with no body (400).
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<{ removed: number }>;
+}
+
 export async function deleteOtherSong(id: string, token: string): Promise<void> {
   const res = await fetch(apiUrl('/api/karaoke/other-songs-remove'), {
     method: 'POST',

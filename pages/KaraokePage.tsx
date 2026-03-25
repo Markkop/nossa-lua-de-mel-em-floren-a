@@ -184,7 +184,9 @@ const KaraokePage: React.FC = () => {
     skipQueue: apiSkipQueue,
     removeQueue: apiRemoveQueue,
     removeGuest: apiRemoveGuest,
+    removeAllGuestSongs: apiRemoveAllGuestSongs,
     removeOther: apiRemoveOther,
+    refreshKaraoke,
   } = useKaraokeSync();
 
   const queueRef = useRef(queue);
@@ -222,8 +224,18 @@ const KaraokePage: React.FC = () => {
   const [djPinInput, setDjPinInput] = useState('');
   const [djError, setDjError] = useState('');
   const [pendingAction, setPendingAction] = useState<string | null>(null);
+  const [isRefreshingKaraoke, setIsRefreshingKaraoke] = useState(false);
 
   const isBusy = (key: string) => pendingAction === key;
+
+  const handleRefreshKaraoke = async () => {
+    setIsRefreshingKaraoke(true);
+    try {
+      await refreshKaraoke();
+    } finally {
+      setIsRefreshingKaraoke(false);
+    }
+  };
 
   const guestKeys = useMemo(() => new Set(guestSongs.map((entry) => makeKey(entry.name, entry.song))), [guestSongs]);
   const otherSongKeys = useMemo(
@@ -595,6 +607,23 @@ const KaraokePage: React.FC = () => {
     }
   };
 
+  const handleRemoveAllGuestSongs = async () => {
+    if (!isDj || guestSongs.length === 0) return;
+    const ok = window.confirm(
+      `Remover todas as ${guestSongs.length} música${guestSongs.length === 1 ? '' : 's'} dos convidados? Esta ação não pode ser desfeita.`
+    );
+    if (!ok) return;
+    setPendingAction('guest-clear-all');
+    try {
+      await apiRemoveAllGuestSongs();
+      pushGuestMessage('Todas as músicas dos convidados foram removidas.', 'success');
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao remover.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
   const handleAddGuestBulk = async () => {
     const lines = bulkText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
     const errors: string[] = [];
@@ -763,27 +792,51 @@ const KaraokePage: React.FC = () => {
                   </button>
                 )}
               </div>
-              {activeTab === 'guest' && (
-                <button
-                  type="button"
-                  onClick={() => setIsGuestModalOpen(true)}
-                  className="h-11 w-11 rounded-full bg-[#8b5e3c] text-white text-2xl font-light shadow-lg hover:bg-[#6f4b30] transition-colors"
-                  aria-label="Adicionar músicas dos convidados"
-                  title="Adicionar músicas dos convidados"
-                >
-                  +
-                </button>
-              )}
-              {activeTab === 'other' && (
-                <button
-                  type="button"
-                  onClick={() => setIsOtherModalOpen(true)}
-                  className="h-11 w-11 rounded-full bg-[#8b5e3c] text-white text-2xl font-light shadow-lg hover:bg-[#6f4b30] transition-colors"
-                  aria-label="Adicionar outras músicas"
-                  title="Adicionar outras músicas"
-                >
-                  +
-                </button>
+              {(activeTab === 'guest' || activeTab === 'other') && (
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => void handleRefreshKaraoke()}
+                    disabled={isRefreshingKaraoke}
+                    aria-busy={isRefreshingKaraoke}
+                    aria-label="Atualizar lista agora"
+                    title="Atualizar lista agora"
+                    className="h-11 w-11 inline-flex items-center justify-center rounded-full border border-[#8b5e3c]/35 text-[#8b5e3c] bg-white shadow-sm hover:bg-[#8b5e3c]/10 transition-colors disabled:opacity-60 disabled:pointer-events-none"
+                  >
+                    {isRefreshingKaraoke ? (
+                      <BtnSpinner className="h-5 w-5" />
+                    ) : (
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-5 w-5"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        aria-hidden
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      activeTab === 'guest' ? setIsGuestModalOpen(true) : setIsOtherModalOpen(true)
+                    }
+                    className="h-11 w-11 rounded-full bg-[#8b5e3c] text-white text-2xl font-light shadow-lg hover:bg-[#6f4b30] transition-colors"
+                    aria-label={
+                      activeTab === 'guest' ? 'Adicionar músicas dos convidados' : 'Adicionar outras músicas'
+                    }
+                    title={activeTab === 'guest' ? 'Adicionar músicas dos convidados' : 'Adicionar outras músicas'}
+                  >
+                    +
+                  </button>
+                </div>
               )}
             </div>
 
@@ -1150,7 +1203,7 @@ const KaraokePage: React.FC = () => {
                   <label className="text-xs uppercase tracking-wide text-gray-500">Convidado</label>
                   <input
                     value={singleGuestName}
-                    disabled={isBusy('guest-single') || isBusy('guest-bulk')}
+                    disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
                     onChange={(event) => {
                       setSingleGuestName(event.target.value);
                       setSingleGuestError('');
@@ -1163,7 +1216,7 @@ const KaraokePage: React.FC = () => {
                   <label className="text-xs uppercase tracking-wide text-gray-500">Música</label>
                   <input
                     value={singleGuestSong}
-                    disabled={isBusy('guest-single') || isBusy('guest-bulk')}
+                    disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
                     onChange={(event) => {
                       setSingleGuestSong(event.target.value);
                       setSingleGuestError('');
@@ -1174,7 +1227,7 @@ const KaraokePage: React.FC = () => {
                 </div>
                 <button
                   type="submit"
-                  disabled={isBusy('guest-single') || isBusy('guest-bulk')}
+                  disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
                   aria-busy={isBusy('guest-single')}
                   className="w-full md:w-auto min-w-[8rem] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
                 >
@@ -1185,22 +1238,41 @@ const KaraokePage: React.FC = () => {
               {singleGuestError && <p className="text-sm text-rose-600 mb-6">{singleGuestError}</p>}
 
               <div className="border-t border-[#8b5e3c]/10 pt-6">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h4 className="text-lg font-serif text-[#3d2b1f]">Adicionar em lote</h4>
-                  <button
-                    type="button"
-                    disabled={isBusy('guest-single') || isBusy('guest-bulk')}
-                    aria-busy={isBusy('guest-bulk')}
-                    onClick={() => void handleAddGuestBulk()}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
-                  >
-                    {isBusy('guest-bulk') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
-                    {isBusy('guest-bulk') ? 'Importando…' : 'Importar linhas'}
-                  </button>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
+                      aria-busy={isBusy('guest-bulk')}
+                      onClick={() => void handleAddGuestBulk()}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                    >
+                      {isBusy('guest-bulk') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                      {isBusy('guest-bulk') ? 'Importando…' : 'Importar linhas'}
+                    </button>
+                    {isDj ? (
+                      <button
+                        type="button"
+                        disabled={
+                          guestSongs.length === 0 ||
+                          isBusy('guest-single') ||
+                          isBusy('guest-bulk') ||
+                          isBusy('guest-clear-all')
+                        }
+                        aria-busy={isBusy('guest-clear-all')}
+                        onClick={() => void handleRemoveAllGuestSongs()}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                      >
+                        {isBusy('guest-clear-all') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                        {isBusy('guest-clear-all') ? 'Removendo…' : 'Remover tudo'}
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
                 <textarea
                   value={bulkText}
-                  disabled={isBusy('guest-single') || isBusy('guest-bulk')}
+                  disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
                   onChange={(event) => setBulkText(event.target.value)}
                   placeholder={`Mateus Ramos Batschauer: Não é sério - Charlie Brown Jr.\nTaciana Floriani: Aquarela - Toquinho`}
                   className="w-full min-h-[160px] px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"

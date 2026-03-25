@@ -207,6 +207,14 @@ export async function buildApp() {
     return { ok: true };
   });
 
+  fastify.post('/api/karaoke/guest-songs-clear', async (request, reply) => {
+    if (!(await requireDj(request.headers.authorization))) {
+      return reply.code(401).send({ error: 'Acesso de DJ necessário' });
+    }
+    const removed = await db.deleteAllGuestSongs();
+    return { ok: true, removed };
+  });
+
   fastify.post<{ Body: { id?: string } }>('/api/karaoke/other-songs-remove', async (request, reply) => {
     if (!(await requireDj(request.headers.authorization))) {
       return reply.code(401).send({ error: 'Acesso de DJ necessário' });
