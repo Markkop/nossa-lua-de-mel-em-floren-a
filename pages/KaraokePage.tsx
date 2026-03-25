@@ -121,46 +121,42 @@ const QueueRow: React.FC<QueueRowProps> = ({
       </td>
       <td className="py-3 px-4 text-[#3d2b1f] font-medium">{item.name}</td>
       <td className="py-3 px-4 text-gray-600">{item.song}</td>
-      <td className="py-3 px-4">
-        <div className="flex items-center justify-end gap-2">
-          {isDj ? (
-            <>
-              <button
-                ref={handleRef}
-                type="button"
-                disabled={dragDisabled || skipLoading || removeLoading}
-                className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Arrastar para reordenar"
-                aria-label="Arrastar para reordenar"
-              >
-                ⇅
-              </button>
-              <button
-                type="button"
-                disabled={skipLoading || removeLoading}
-                aria-busy={skipLoading}
-                onClick={() => void onSkip(item.id)}
-                className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
-              >
-                {skipLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
-                Pular
-              </button>
-              <button
-                type="button"
-                disabled={skipLoading || removeLoading}
-                aria-busy={removeLoading}
-                onClick={() => void onRemove(item.id)}
-                className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
-              >
-                {removeLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
-                Excluir
-              </button>
-            </>
-          ) : (
-            <span className="text-xs text-gray-400">Modo DJ para gerir a fila</span>
-          )}
-        </div>
-      </td>
+      {isDj ? (
+        <td className="py-3 px-4">
+          <div className="flex items-center justify-end gap-2">
+            <button
+              ref={handleRef}
+              type="button"
+              disabled={dragDisabled || skipLoading || removeLoading}
+              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Arrastar para reordenar"
+              aria-label="Arrastar para reordenar"
+            >
+              ⇅
+            </button>
+            <button
+              type="button"
+              disabled={skipLoading || removeLoading}
+              aria-busy={skipLoading}
+              onClick={() => void onSkip(item.id)}
+              className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+            >
+              {skipLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+              Pular
+            </button>
+            <button
+              type="button"
+              disabled={skipLoading || removeLoading}
+              aria-busy={removeLoading}
+              onClick={() => void onRemove(item.id)}
+              className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+            >
+              {removeLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+              Excluir
+            </button>
+          </div>
+        </td>
+      ) : null}
     </tr>
   );
 };
@@ -940,13 +936,15 @@ const KaraokePage: React.FC = () => {
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Música</th>
-                          <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
+                          {isDj ? (
+                            <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
+                          ) : null}
                         </tr>
                       </thead>
                       <tbody>
                         {otherSongs.length === 0 ? (
                           <tr>
-                            <td colSpan={2} className="py-8 px-4 text-center text-gray-500 text-sm">
+                            <td colSpan={isDj ? 2 : 1} className="py-8 px-4 text-center text-gray-500 text-sm">
                               Nenhuma música adicionada ainda. Clique no + para começar.
                             </td>
                           </tr>
@@ -954,9 +952,9 @@ const KaraokePage: React.FC = () => {
                           otherSongs.map((entry) => (
                             <tr key={entry.id} className="border-b border-[#8b5e3c]/10 hover:bg-[#8b5e3c]/5 transition-colors">
                               <td className="py-3 px-4 text-[#3d2b1f] font-medium">{entry.song}</td>
-                              <td className="py-3 px-4">
-                                <div className="flex items-center justify-end">
-                                  {isDj && (
+                              {isDj ? (
+                                <td className="py-3 px-4">
+                                  <div className="flex items-center justify-end">
                                     <button
                                       type="button"
                                       disabled={isBusy(`other-remove-${entry.id}`)}
@@ -969,9 +967,9 @@ const KaraokePage: React.FC = () => {
                                       ) : null}
                                       Excluir
                                     </button>
-                                  )}
-                                </div>
-                              </td>
+                                  </div>
+                                </td>
+                              ) : null}
                             </tr>
                           ))
                         )}
@@ -1116,13 +1114,15 @@ const KaraokePage: React.FC = () => {
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Status</th>
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Convidado</th>
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Música</th>
-                          <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
+                          {isDj ? (
+                            <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
+                          ) : null}
                         </tr>
                       </thead>
                       <tbody>
                         {queue.length === 0 ? (
                           <tr>
-                            <td colSpan={4} className="py-8 px-4 text-center text-gray-500 text-sm">
+                            <td colSpan={isDj ? 4 : 3} className="py-8 px-4 text-center text-gray-500 text-sm">
                               A fila está vazia no momento.
                             </td>
                           </tr>
