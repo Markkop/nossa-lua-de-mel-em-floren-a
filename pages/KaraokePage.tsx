@@ -3,6 +3,8 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 
+import { Lock, LockOpen } from 'lucide-react';
+
 import { useKaraokeSync } from '@/hooks/useKaraokeSync';
 
 type KaraokeEntry = {
@@ -46,6 +48,57 @@ const BtnSpinner: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' })
       fill="currentColor"
       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
     />
+  </svg>
+);
+
+const IconTrash: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    aria-hidden
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+    />
+  </svg>
+);
+
+const IconSkipForward: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    aria-hidden
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M3 8.688c0-.864.933-1.405 1.683-.977l7.108 4.062a1.125 1.125 0 010 1.953l-7.108 4.062A1.125 1.125 0 013 16.81V8.688zM12.75 8.688c0-.864.933-1.405 1.683-.977l7.108 4.062a1.125 1.125 0 010 1.953l-7.108 4.062a1.125 1.125 0 01-1.683-.977V8.688z"
+    />
+  </svg>
+);
+
+const IconQueueAdd: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg
+    className={className}
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    aria-hidden
+  >
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h6" />
+    <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 13.5v6m-3-3h6" />
   </svg>
 );
 
@@ -119,8 +172,11 @@ const QueueRow: React.FC<QueueRowProps> = ({
           {statusLabel}
         </span>
       </td>
-      <td className="py-3 px-4 text-[#3d2b1f] font-medium">{item.name}</td>
-      <td className="py-3 px-4 text-gray-600">{item.song}</td>
+      <td className="py-3 px-4 text-[#3d2b1f] font-medium">
+        <span className="block">{item.name}</span>
+        <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">{item.song}</span>
+      </td>
+      <td className="hidden md:table-cell py-3 px-4 text-gray-600">{item.song}</td>
       {isDj ? (
         <td className="py-3 px-4">
           <div className="flex items-center justify-end gap-2">
@@ -138,21 +194,37 @@ const QueueRow: React.FC<QueueRowProps> = ({
               type="button"
               disabled={skipLoading || removeLoading}
               aria-busy={skipLoading}
+              aria-label="Pular"
+              title="Pular"
               onClick={() => void onSkip(item.id)}
-              className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
             >
-              {skipLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
-              Pular
+              {skipLoading ? (
+                <BtnSpinner className="h-3.5 w-3.5" />
+              ) : (
+                <>
+                  <IconSkipForward className="h-4 w-4 md:hidden" />
+                  <span className="hidden md:inline">Pular</span>
+                </>
+              )}
             </button>
             <button
               type="button"
               disabled={skipLoading || removeLoading}
               aria-busy={removeLoading}
+              aria-label="Excluir"
+              title="Excluir"
               onClick={() => void onRemove(item.id)}
-              className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
             >
-              {removeLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
-              Excluir
+              {removeLoading ? (
+                <BtnSpinner className="h-3.5 w-3.5" />
+              ) : (
+                <>
+                  <IconTrash className="h-4 w-4 md:hidden" />
+                  <span className="hidden md:inline">Excluir</span>
+                </>
+              )}
             </button>
           </div>
         </td>
@@ -193,6 +265,7 @@ const KaraokePage: React.FC = () => {
   const [queueSong, setQueueSong] = useState('');
   const [queueError, setQueueError] = useState('');
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
+  const [isRemoveAllGuestConfirmOpen, setIsRemoveAllGuestConfirmOpen] = useState(false);
   const [isOtherModalOpen, setIsOtherModalOpen] = useState(false);
   const [singleGuestName, setSingleGuestName] = useState('');
   const [singleGuestSong, setSingleGuestSong] = useState('');
@@ -217,6 +290,7 @@ const KaraokePage: React.FC = () => {
   const [nameHighlightIndex, setNameHighlightIndex] = useState(-1);
   const [songHighlightIndex, setSongHighlightIndex] = useState(-1);
   const [isDjModalOpen, setIsDjModalOpen] = useState(false);
+  const djPinInputRef = useRef<HTMLInputElement | null>(null);
   const [djPinInput, setDjPinInput] = useState('');
   const [djError, setDjError] = useState('');
   const [pendingAction, setPendingAction] = useState<string | null>(null);
@@ -603,15 +677,24 @@ const KaraokePage: React.FC = () => {
     }
   };
 
-  const handleRemoveAllGuestSongs = async () => {
+  const openRemoveAllGuestConfirm = () => {
     if (!isDj || guestSongs.length === 0) return;
-    const ok = window.confirm(
-      `Remover todas as ${guestSongs.length} música${guestSongs.length === 1 ? '' : 's'} dos convidados? Esta ação não pode ser desfeita.`
-    );
-    if (!ok) return;
+    setIsRemoveAllGuestConfirmOpen(true);
+  };
+
+  const closeRemoveAllGuestConfirm = () => {
+    setIsRemoveAllGuestConfirmOpen(false);
+  };
+
+  const confirmRemoveAllGuestSongs = async () => {
+    if (!isDj || guestSongs.length === 0) {
+      closeRemoveAllGuestConfirm();
+      return;
+    }
     setPendingAction('guest-clear-all');
     try {
       await apiRemoveAllGuestSongs();
+      closeRemoveAllGuestConfirm();
       pushGuestMessage('Todas as músicas dos convidados foram removidas.', 'success');
     } catch (e) {
       pushGuestMessage(e instanceof Error ? e.message : 'Erro ao remover.', 'error');
@@ -675,6 +758,7 @@ const KaraokePage: React.FC = () => {
 
   const closeGuestModal = () => {
     setIsGuestModalOpen(false);
+    setIsRemoveAllGuestConfirmOpen(false);
     setSingleGuestError('');
     setBulkErrors([]);
     setBulkAddedCount(null);
@@ -694,6 +778,12 @@ const KaraokePage: React.FC = () => {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!isDjModalOpen) return;
+    const id = window.setTimeout(() => djPinInputRef.current?.focus(), 0);
+    return () => window.clearTimeout(id);
+  }, [isDjModalOpen]);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -771,9 +861,11 @@ const KaraokePage: React.FC = () => {
                       logoutDj();
                       pushGuestMessage('Modo DJ encerrado.', 'success');
                     }}
-                    className="px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide border border-amber-600/40 text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors"
+                    aria-label="Sair do modo DJ"
+                    title="Sair do modo DJ"
+                    className="h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full border border-amber-600/40 text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors"
                   >
-                    Sair do modo DJ
+                    <LockOpen className="h-5 w-5 shrink-0" aria-hidden strokeWidth={1.75} />
                   </button>
                 ) : (
                   <button
@@ -782,9 +874,11 @@ const KaraokePage: React.FC = () => {
                       setDjError('');
                       setIsDjModalOpen(true);
                     }}
-                    className="px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide border border-[#8b5e3c]/40 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors"
+                    aria-label="Modo DJ"
+                    title="Modo DJ"
+                    className="h-11 w-11 shrink-0 inline-flex items-center justify-center rounded-full border border-[#8b5e3c]/40 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors"
                   >
-                    Modo DJ
+                    <Lock className="h-5 w-5 shrink-0 opacity-60" aria-hidden strokeWidth={1.75} />
                   </button>
                 )}
               </div>
@@ -869,7 +963,9 @@ const KaraokePage: React.FC = () => {
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Convidado</th>
-                          <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Música</th>
+                          <th className="hidden md:table-cell text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                            Música
+                          </th>
                           <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
                         </tr>
                       </thead>
@@ -883,34 +979,51 @@ const KaraokePage: React.FC = () => {
                         ) : (
                           guestSongs.map((entry) => (
                             <tr key={entry.id} className="border-b border-[#8b5e3c]/10 hover:bg-[#8b5e3c]/5 transition-colors">
-                              <td className="py-3 px-4 text-[#3d2b1f] font-medium">{entry.name}</td>
-                              <td className="py-3 px-4 text-gray-600">{entry.song}</td>
+                              <td className="py-3 px-4 text-[#3d2b1f] font-medium">
+                                <span className="block">{entry.name}</span>
+                                <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">
+                                  {entry.song}
+                                </span>
+                              </td>
+                              <td className="hidden md:table-cell py-3 px-4 text-gray-600">{entry.song}</td>
                               <td className="py-3 px-4">
                                 <div className="flex items-center justify-end gap-2">
                                   <button
                                     type="button"
                                     disabled={isBusy(`guest-fila-${entry.id}`)}
                                     aria-busy={isBusy(`guest-fila-${entry.id}`)}
+                                    aria-label="Para fila"
+                                    title="Para fila"
                                     onClick={() => void handleAddGuestToQueue(entry)}
-                                    className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                                    className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
                                   >
                                     {isBusy(`guest-fila-${entry.id}`) ? (
                                       <BtnSpinner className="h-3.5 w-3.5" />
-                                    ) : null}
-                                    Para fila
+                                    ) : (
+                                      <>
+                                        <IconQueueAdd className="h-4 w-4 md:hidden" />
+                                        <span className="hidden md:inline">Para fila</span>
+                                      </>
+                                    )}
                                   </button>
                                   {isDj && (
                                     <button
                                       type="button"
                                       disabled={isBusy(`guest-remove-${entry.id}`)}
                                       aria-busy={isBusy(`guest-remove-${entry.id}`)}
+                                      aria-label="Excluir"
+                                      title="Excluir"
                                       onClick={() => void handleRemoveGuest(entry.id)}
-                                      className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                                      className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
                                     >
                                       {isBusy(`guest-remove-${entry.id}`) ? (
                                         <BtnSpinner className="h-3.5 w-3.5" />
-                                      ) : null}
-                                      Excluir
+                                      ) : (
+                                        <>
+                                          <IconTrash className="h-4 w-4 md:hidden" />
+                                          <span className="hidden md:inline">Excluir</span>
+                                        </>
+                                      )}
                                     </button>
                                   )}
                                 </div>
@@ -959,13 +1072,19 @@ const KaraokePage: React.FC = () => {
                                       type="button"
                                       disabled={isBusy(`other-remove-${entry.id}`)}
                                       aria-busy={isBusy(`other-remove-${entry.id}`)}
+                                      aria-label="Excluir"
+                                      title="Excluir"
                                       onClick={() => void handleRemoveOther(entry.id)}
-                                      className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                                      className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
                                     >
                                       {isBusy(`other-remove-${entry.id}`) ? (
                                         <BtnSpinner className="h-3.5 w-3.5" />
-                                      ) : null}
-                                      Excluir
+                                      ) : (
+                                        <>
+                                          <IconTrash className="h-4 w-4 md:hidden" />
+                                          <span className="hidden md:inline">Excluir</span>
+                                        </>
+                                      )}
                                     </button>
                                   </div>
                                 </td>
@@ -1113,7 +1232,9 @@ const KaraokePage: React.FC = () => {
                         <tr className="border-b border-[#8b5e3c]/20">
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Status</th>
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Convidado</th>
-                          <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Música</th>
+                          <th className="hidden md:table-cell text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                            Música
+                          </th>
                           {isDj ? (
                             <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
                           ) : null}
@@ -1261,7 +1382,7 @@ const KaraokePage: React.FC = () => {
                           isBusy('guest-clear-all')
                         }
                         aria-busy={isBusy('guest-clear-all')}
-                        onClick={() => void handleRemoveAllGuestSongs()}
+                        onClick={openRemoveAllGuestConfirm}
                         className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
                       >
                         {isBusy('guest-clear-all') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
@@ -1297,6 +1418,49 @@ const KaraokePage: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRemoveAllGuestConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[55] flex items-center justify-center p-4 bg-black/60"
+          onClick={closeRemoveAllGuestConfirm}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-6 md:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-all-guest-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 id="remove-all-guest-title" className="text-xl font-serif text-[#3d2b1f] mb-2">
+              Remover todas as músicas?
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Remover todas as {guestSongs.length} música{guestSongs.length === 1 ? '' : 's'} dos convidados? Esta ação
+              não pode ser desfeita.
+            </p>
+            <div className="flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeRemoveAllGuestConfirm}
+                disabled={isBusy('guest-clear-all')}
+                className="inline-flex items-center justify-center min-h-[2.75rem] px-5 py-2.5 rounded-xl border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-sm font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmRemoveAllGuestSongs()}
+                disabled={isBusy('guest-clear-all')}
+                aria-busy={isBusy('guest-clear-all')}
+                className="inline-flex items-center justify-center gap-2 min-h-[2.75rem] px-5 py-2.5 rounded-xl bg-rose-600 text-white font-semibold text-sm uppercase tracking-wide hover:bg-rose-700 transition-colors disabled:opacity-70 disabled:pointer-events-none"
+              >
+                {isBusy('guest-clear-all') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
+                {isBusy('guest-clear-all') ? 'Removendo…' : 'Remover tudo'}
+              </button>
             </div>
           </div>
         </div>
@@ -1449,6 +1613,7 @@ const KaraokePage: React.FC = () => {
               className="space-y-4"
             >
               <input
+                ref={djPinInputRef}
                 type="password"
                 autoComplete="current-password"
                 value={djPinInput}
