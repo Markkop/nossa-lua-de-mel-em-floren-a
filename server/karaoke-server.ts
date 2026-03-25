@@ -54,7 +54,7 @@ export async function buildApp() {
 
   fastify.get('/api/karaoke/state', async () => db.loadState());
 
-  fastify.post<{ Body: { pin?: string } }>('/api/karaoke/auth/dj', async (request, reply) => {
+  fastify.post<{ Body: { pin?: string } }>('/api/karaoke/dj-auth', async (request, reply) => {
     const pin = request.body?.pin ?? '';
     if (!pinMatches(pin)) {
       return reply.code(401).send({ error: 'PIN inválido' });

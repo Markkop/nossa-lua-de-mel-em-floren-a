@@ -29,7 +29,7 @@ export async function fetchKaraokeState(): Promise<KaraokeState> {
 }
 
 export async function djLogin(pin: string): Promise<string> {
-  const res = await fetch(apiUrl('/api/karaoke/auth/dj'), {
+  const res = await fetch(apiUrl('/api/karaoke/dj-auth'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ pin }),

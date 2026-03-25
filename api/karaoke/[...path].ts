@@ -1,11 +1,10 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
-import { buildApp } from '../server/karaoke-server.js';
+import { buildApp } from '../../server/karaoke-server.js';
 
 /**
- * Single catch-all for `/api/*` so nested paths like `/api/karaoke/auth/dj`
- * are not shadowed by Vercel’s router (a nested `api/karaoke/[...path].ts`
- * can 404 on multi-segment routes under `auth/`).
+ * `/api/karaoke/*` — do not use a root `api/[...path].ts`; it can break Vercel routing.
+ * DJ login is `POST /api/karaoke/dj-auth` (not `.../auth/dj`) to avoid `auth` segment issues.
  */
 let appPromise: ReturnType<typeof buildApp> | null = null;
 
