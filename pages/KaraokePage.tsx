@@ -3,6 +3,8 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 
+import { useKaraokeSync } from '@/hooks/useKaraokeSync';
+
 type KaraokeEntry = {
   id: string;
   name: string;
@@ -27,25 +29,56 @@ type SongSuggestion = {
   fromGuest: boolean;
 };
 
-const createId = () => `karaoke-${Math.random().toString(36).slice(2, 9)}-${Date.now().toString(36)}`;
-
 const normalizeText = (value: string) => value.trim().replace(/\s+/g, ' ');
 const makeKey = (name: string, song: string) => `${normalizeText(name)}::${normalizeText(song)}`;
+
+const BtnSpinner: React.FC<{ className?: string }> = ({ className = 'h-4 w-4' }) => (
+  <svg
+    className={`animate-spin ${className}`}
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    aria-hidden
+  >
+    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+    <path
+      className="opacity-75"
+      fill="currentColor"
+      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+    />
+  </svg>
+);
 
 type QueueRowProps = {
   item: KaraokeEntry;
   index: number;
   isDragging: boolean;
   isOver: boolean;
+  isDj: boolean;
+  dragDisabled: boolean;
+  skipLoading: boolean;
+  removeLoading: boolean;
   onSkip: (id: string) => void;
   onRemove: (id: string) => void;
 };
 
-const QueueRow: React.FC<QueueRowProps> = ({ item, index, isDragging, isOver, onSkip, onRemove }) => {
+const QueueRow: React.FC<QueueRowProps> = ({
+  item,
+  index,
+  isDragging,
+  isOver,
+  isDj,
+  dragDisabled,
+  skipLoading,
+  removeLoading,
+  onSkip,
+  onRemove,
+}) => {
   const rowRef = useRef<HTMLTableRowElement | null>(null);
   const handleRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
+    if (!isDj || dragDisabled) return;
     const row = rowRef.current;
     const handle = handleRef.current;
     if (!row || !handle) return;
@@ -62,7 +95,7 @@ const QueueRow: React.FC<QueueRowProps> = ({ item, index, isDragging, isOver, on
         canDrop: ({ source }) => source.data.listId === 'queue',
       })
     );
-  }, [item.id]);
+  }, [isDj, dragDisabled, item.id]);
 
   const statusLabel = index === 0 ? 'Agora' : index === 1 ? 'Próximo' : `Fila ${index + 1}`;
   const statusTone =
@@ -90,29 +123,42 @@ const QueueRow: React.FC<QueueRowProps> = ({ item, index, isDragging, isOver, on
       <td className="py-3 px-4 text-gray-600">{item.song}</td>
       <td className="py-3 px-4">
         <div className="flex items-center justify-end gap-2">
-          <button
-            ref={handleRef}
-            type="button"
-            className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing"
-            title="Arrastar para reordenar"
-            aria-label="Arrastar para reordenar"
-          >
-            ⇅
-          </button>
-          <button
-            type="button"
-            onClick={() => onSkip(item.id)}
-            className="h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide"
-          >
-            Pular
-          </button>
-          <button
-            type="button"
-            onClick={() => onRemove(item.id)}
-            className="h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide"
-          >
-            Excluir
-          </button>
+          {isDj ? (
+            <>
+              <button
+                ref={handleRef}
+                type="button"
+                disabled={dragDisabled || skipLoading || removeLoading}
+                className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Arrastar para reordenar"
+                aria-label="Arrastar para reordenar"
+              >
+                ⇅
+              </button>
+              <button
+                type="button"
+                disabled={skipLoading || removeLoading}
+                aria-busy={skipLoading}
+                onClick={() => void onSkip(item.id)}
+                className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+              >
+                {skipLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                Pular
+              </button>
+              <button
+                type="button"
+                disabled={skipLoading || removeLoading}
+                aria-busy={removeLoading}
+                onClick={() => void onRemove(item.id)}
+                className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+              >
+                {removeLoading ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                Excluir
+              </button>
+            </>
+          ) : (
+            <span className="text-xs text-gray-400">Modo DJ para gerir a fila</span>
+          )}
         </div>
       </td>
     </tr>
@@ -120,10 +166,31 @@ const QueueRow: React.FC<QueueRowProps> = ({ item, index, isDragging, isOver, on
 };
 
 const KaraokePage: React.FC = () => {
+  const {
+    queue,
+    guestSongs,
+    otherSongs,
+    isLoading,
+    loadError,
+    isDj,
+    loginDj,
+    logoutDj,
+    addQueueEntry: apiAddQueue,
+    addGuestSong: apiAddGuest,
+    addGuestBulk,
+    addOtherSong: apiAddOther,
+    addOtherBulk,
+    reorderQueue: apiReorderQueue,
+    skipQueue: apiSkipQueue,
+    removeQueue: apiRemoveQueue,
+    removeGuest: apiRemoveGuest,
+    removeOther: apiRemoveOther,
+  } = useKaraokeSync();
+
+  const queueRef = useRef(queue);
+  queueRef.current = queue;
+
   const [activeTab, setActiveTab] = useState<'guest' | 'queue' | 'other'>('queue');
-  const [guestSongs, setGuestSongs] = useState<KaraokeEntry[]>([]);
-  const [otherSongs, setOtherSongs] = useState<OtherSong[]>([]);
-  const [queue, setQueue] = useState<KaraokeEntry[]>([]);
   const [queueName, setQueueName] = useState('');
   const [queueSong, setQueueSong] = useState('');
   const [queueError, setQueueError] = useState('');
@@ -151,6 +218,12 @@ const KaraokePage: React.FC = () => {
   const [isSongFocused, setIsSongFocused] = useState(false);
   const [nameHighlightIndex, setNameHighlightIndex] = useState(-1);
   const [songHighlightIndex, setSongHighlightIndex] = useState(-1);
+  const [isDjModalOpen, setIsDjModalOpen] = useState(false);
+  const [djPinInput, setDjPinInput] = useState('');
+  const [djError, setDjError] = useState('');
+  const [pendingAction, setPendingAction] = useState<string | null>(null);
+
+  const isBusy = (key: string) => pendingAction === key;
 
   const guestKeys = useMemo(() => new Set(guestSongs.map((entry) => makeKey(entry.name, entry.song))), [guestSongs]);
   const otherSongKeys = useMemo(
@@ -213,7 +286,19 @@ const KaraokePage: React.FC = () => {
     setSongHighlightIndex(-1);
   }, [queueSong]);
 
+  const pushGuestMessage = (message: string, tone: 'success' | 'error') => {
+    setGuestActionMessage(message);
+    setGuestActionTone(tone);
+    if (guestActionTimer.current) {
+      window.clearTimeout(guestActionTimer.current);
+    }
+    guestActionTimer.current = window.setTimeout(() => {
+      setGuestActionMessage(null);
+    }, 2500);
+  };
+
   useEffect(() => {
+    if (!isDj || pendingAction === 'reorder') return;
     return monitorForElements({
       canMonitor: ({ source }) => source.data.listId === 'queue',
       onDragStart: ({ source }) => {
@@ -231,21 +316,22 @@ const KaraokePage: React.FC = () => {
         const sourceId = String(source.data.id ?? '');
         const targetId = String(target.data.id ?? '');
         if (!sourceId || !targetId || sourceId === targetId) return;
-        setQueue((prev) => {
-          const startIndex = prev.findIndex((item) => item.id === sourceId);
-          const finishIndex = prev.findIndex((item) => item.id === targetId);
-          if (startIndex === -1 || finishIndex === -1) return prev;
-          return reorder({ list: prev, startIndex, finishIndex });
-        });
-      },
-      onDragEnd: () => {
-        setDraggingId(null);
-        setOverId(null);
+        const prev = queueRef.current;
+        const startIndex = prev.findIndex((item) => item.id === sourceId);
+        const finishIndex = prev.findIndex((item) => item.id === targetId);
+        if (startIndex === -1 || finishIndex === -1) return;
+        const newOrder = reorder<KaraokeEntry>({ list: prev, startIndex, finishIndex });
+        setPendingAction('reorder');
+        void apiReorderQueue(newOrder.map((item) => item.id))
+          .catch((err) => {
+            pushGuestMessage(err instanceof Error ? err.message : 'Não foi possível reordenar.', 'error');
+          })
+          .finally(() => setPendingAction(null));
       },
     });
-  }, []);
+  }, [isDj, pendingAction, apiReorderQueue]);
 
-  const addQueueEntry = (
+  const addQueueEntry = async (
     rawName: string,
     rawSong: string,
     options: { clearInputs?: boolean; showErrors?: boolean } = {}
@@ -262,57 +348,76 @@ const KaraokePage: React.FC = () => {
       if (showErrors) setQueueError('Essa inscrição já está na fila.');
       return false;
     }
-    setQueue((prev) => [...prev, { id: createId(), name, song }]);
-    if (options.clearInputs !== false) {
-      setQueueName('');
-      setQueueSong('');
+    setPendingAction('queue');
+    try {
+      await apiAddQueue(name, song);
+      if (options.clearInputs !== false) {
+        setQueueName('');
+        setQueueSong('');
+      }
+      setQueueError('');
+      return true;
+    } catch (e) {
+      if (showErrors) setQueueError(e instanceof Error ? e.message : 'Não foi possível entrar na fila.');
+      return false;
+    } finally {
+      setPendingAction(null);
     }
-    setQueueError('');
-    return true;
   };
 
   const handleAddQueue = () => {
-    addQueueEntry(queueName, queueSong);
+    void addQueueEntry(queueName, queueSong);
   };
 
-  const pushGuestMessage = (message: string, tone: 'success' | 'error') => {
-    setGuestActionMessage(message);
-    setGuestActionTone(tone);
-    if (guestActionTimer.current) {
-      window.clearTimeout(guestActionTimer.current);
-    }
-    guestActionTimer.current = window.setTimeout(() => {
-      setGuestActionMessage(null);
-    }, 2500);
-  };
-
-  const handleAddGuestToQueue = (entry: KaraokeEntry) => {
+  const handleAddGuestToQueue = async (entry: KaraokeEntry) => {
     const key = makeKey(entry.name, entry.song);
     if (queueKeys.has(key)) {
       pushGuestMessage('Essa inscrição já está na fila.', 'error');
       return;
     }
-    setQueue((prev) => [...prev, { id: createId(), name: entry.name, song: entry.song }]);
-    pushGuestMessage('Adicionado à fila!', 'success');
+    const actionKey = `guest-fila-${entry.id}`;
+    setPendingAction(actionKey);
+    try {
+      await apiAddQueue(entry.name, entry.song);
+      pushGuestMessage('Adicionado à fila!', 'success');
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao adicionar à fila.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
   };
 
-  const handleRemoveGuest = (id: string) => {
-    setGuestSongs((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveGuest = async (id: string) => {
+    setPendingAction(`guest-remove-${id}`);
+    try {
+      await apiRemoveGuest(id);
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao excluir.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
   };
 
-  const handleSkipQueue = (id: string) => {
-    setQueue((prev) => {
-      const index = prev.findIndex((item) => item.id === id);
-      if (index === -1 || prev.length < 2) return prev;
-      const next = [...prev];
-      const [item] = next.splice(index, 1);
-      next.push(item);
-      return next;
-    });
+  const handleSkipQueue = async (id: string) => {
+    setPendingAction(`skip-${id}`);
+    try {
+      await apiSkipQueue(id);
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao pular.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
   };
 
-  const handleRemoveQueue = (id: string) => {
-    setQueue((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveQueue = async (id: string) => {
+    setPendingAction(`remove-q-${id}`);
+    try {
+      await apiRemoveQueue(id);
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao excluir.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
   };
 
   const handleSelectNameSuggestion = (suggestion: NameSuggestion) => {
@@ -329,13 +434,14 @@ const KaraokePage: React.FC = () => {
     if (suggestion.song) {
       setQueueName(suggestion.name);
       setQueueSong(suggestion.song);
-      const added = addQueueEntry(suggestion.name, suggestion.song);
-      if (added) {
-        setIsNameFocused(false);
-        setIsSongFocused(false);
-        setNameHighlightIndex(-1);
-        setSongHighlightIndex(-1);
-      }
+      void addQueueEntry(suggestion.name, suggestion.song).then((added) => {
+        if (added) {
+          setIsNameFocused(false);
+          setIsSongFocused(false);
+          setNameHighlightIndex(-1);
+          setSongHighlightIndex(-1);
+        }
+      });
     }
   };
 
@@ -384,7 +490,7 @@ const KaraokePage: React.FC = () => {
     }
   };
 
-  const handleAddGuestSingle = () => {
+  const handleAddGuestSingle = async () => {
     const name = normalizeText(singleGuestName);
     const song = normalizeText(singleGuestSong);
     if (!name || !song) {
@@ -396,13 +502,20 @@ const KaraokePage: React.FC = () => {
       setSingleGuestError('Essa combinação já foi adicionada.');
       return;
     }
-    setGuestSongs((prev) => [...prev, { id: createId(), name, song }]);
-    setSingleGuestName('');
-    setSingleGuestSong('');
-    setSingleGuestError('');
+    setPendingAction('guest-single');
+    try {
+      await apiAddGuest(name, song);
+      setSingleGuestName('');
+      setSingleGuestSong('');
+      setSingleGuestError('');
+    } catch (e) {
+      setSingleGuestError(e instanceof Error ? e.message : 'Erro ao adicionar.');
+    } finally {
+      setPendingAction(null);
+    }
   };
 
-  const handleAddOtherSingle = () => {
+  const handleAddOtherSingle = async () => {
     const song = normalizeText(singleOtherSong);
     if (!song) {
       setSingleOtherError('Preencha a música para adicionar.');
@@ -413,15 +526,22 @@ const KaraokePage: React.FC = () => {
       setSingleOtherError('Essa música já foi adicionada.');
       return;
     }
-    setOtherSongs((prev) => [...prev, { id: createId(), song }]);
-    setSingleOtherSong('');
-    setSingleOtherError('');
+    setPendingAction('other-single');
+    try {
+      await apiAddOther(song);
+      setSingleOtherSong('');
+      setSingleOtherError('');
+    } catch (e) {
+      setSingleOtherError(e instanceof Error ? e.message : 'Erro ao adicionar.');
+    } finally {
+      setPendingAction(null);
+    }
   };
 
-  const handleAddOtherBulk = () => {
+  const handleAddOtherBulk = async () => {
     const lines = otherBulkText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
     const errors: string[] = [];
-    const additions: OtherSong[] = [];
+    const songsToAdd: string[] = [];
     const nextKeys = new Set(otherSongKeys);
 
     lines.forEach((line, index) => {
@@ -436,30 +556,49 @@ const KaraokePage: React.FC = () => {
         return;
       }
       nextKeys.add(key);
-      additions.push({ id: createId(), song });
+      songsToAdd.push(song);
     });
 
-    if (additions.length > 0) {
-      setOtherSongs((prev) => [...prev, ...additions]);
+    if (songsToAdd.length === 0) {
+      setOtherBulkErrors(errors);
+      setOtherBulkAddedCount(0);
+      return;
     }
-    setOtherBulkErrors(errors);
-    setOtherBulkAddedCount(additions.length);
-    if (additions.length > 0) {
-      setOtherBulkText('');
-    }
-    if (additions.length > 0 && errors.length === 0) {
-      closeOtherModal();
+
+    setPendingAction('other-bulk');
+    try {
+      const { added, errors: apiErrors } = await addOtherBulk(songsToAdd);
+      setOtherBulkErrors([...errors, ...apiErrors]);
+      setOtherBulkAddedCount(added);
+      if (added > 0) {
+        setOtherBulkText('');
+      }
+      if (added > 0 && errors.length === 0 && apiErrors.length === 0) {
+        closeOtherModal();
+      }
+    } catch (e) {
+      setOtherBulkErrors([e instanceof Error ? e.message : 'Erro ao importar.']);
+      setOtherBulkAddedCount(0);
+    } finally {
+      setPendingAction(null);
     }
   };
 
-  const handleRemoveOther = (id: string) => {
-    setOtherSongs((prev) => prev.filter((item) => item.id !== id));
+  const handleRemoveOther = async (id: string) => {
+    setPendingAction(`other-remove-${id}`);
+    try {
+      await apiRemoveOther(id);
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao excluir.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
   };
 
-  const handleAddGuestBulk = () => {
+  const handleAddGuestBulk = async () => {
     const lines = bulkText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
     const errors: string[] = [];
-    const additions: KaraokeEntry[] = [];
+    const entries: { name: string; song: string }[] = [];
     const nextKeys = new Set(guestKeys);
 
     lines.forEach((line, index) => {
@@ -481,19 +620,31 @@ const KaraokePage: React.FC = () => {
         return;
       }
       nextKeys.add(key);
-      additions.push({ id: createId(), name, song });
+      entries.push({ name, song });
     });
 
-    if (additions.length > 0) {
-      setGuestSongs((prev) => [...prev, ...additions]);
+    if (entries.length === 0) {
+      setBulkErrors(errors);
+      setBulkAddedCount(0);
+      return;
     }
-    setBulkErrors(errors);
-    setBulkAddedCount(additions.length);
-    if (additions.length > 0) {
-      setBulkText('');
-    }
-    if (additions.length > 0 && errors.length === 0) {
-      closeGuestModal();
+
+    setPendingAction('guest-bulk');
+    try {
+      const { added, errors: apiErrors } = await addGuestBulk(entries);
+      setBulkErrors([...errors, ...apiErrors]);
+      setBulkAddedCount(added);
+      if (added > 0) {
+        setBulkText('');
+      }
+      if (added > 0 && errors.length === 0 && apiErrors.length === 0) {
+        closeGuestModal();
+      }
+    } catch (e) {
+      setBulkErrors([e instanceof Error ? e.message : 'Erro ao importar.']);
+      setBulkAddedCount(0);
+    } finally {
+      setPendingAction(null);
     }
   };
 
@@ -554,7 +705,7 @@ const KaraokePage: React.FC = () => {
         <div className="max-w-5xl mx-auto">
           <div className="bg-white rounded-[32px] border border-[#8b5e3c]/15 shadow-[0_30px_80px_-50px_rgba(61,43,31,0.35)] overflow-hidden">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 px-6 md:px-10 py-6 border-b border-[#8b5e3c]/10 bg-[#fbf7f1]">
-              <div className="flex flex-wrap gap-3">
+              <div className="flex flex-wrap gap-3 items-center">
                 <button
                   type="button"
                   onClick={() => setActiveTab('queue')}
@@ -588,6 +739,29 @@ const KaraokePage: React.FC = () => {
                 >
                   Outras músicas
                 </button>
+                {isDj ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logoutDj();
+                      pushGuestMessage('Modo DJ encerrado.', 'success');
+                    }}
+                    className="px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide border border-amber-600/40 text-amber-800 bg-amber-50 hover:bg-amber-100 transition-colors"
+                  >
+                    Sair do modo DJ
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDjError('');
+                      setIsDjModalOpen(true);
+                    }}
+                    className="px-4 py-2 rounded-full text-xs font-semibold uppercase tracking-wide border border-[#8b5e3c]/40 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors"
+                  >
+                    Modo DJ
+                  </button>
+                )}
               </div>
               {activeTab === 'guest' && (
                 <button
@@ -614,6 +788,14 @@ const KaraokePage: React.FC = () => {
             </div>
 
             <div className="px-6 md:px-10 py-8">
+              {loadError && (
+                <div className="mb-6 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+                  {loadError}
+                </div>
+              )}
+              {isLoading && (
+                <div className="mb-6 text-center text-sm text-gray-500">Carregando dados do karaokê…</div>
+              )}
               {activeTab === 'guest' && (
                 <div className="space-y-6">
                   <div className="text-center">
@@ -658,18 +840,30 @@ const KaraokePage: React.FC = () => {
                                 <div className="flex items-center justify-end gap-2">
                                   <button
                                     type="button"
-                                    onClick={() => handleAddGuestToQueue(entry)}
-                                    className="h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide"
+                                    disabled={isBusy(`guest-fila-${entry.id}`)}
+                                    aria-busy={isBusy(`guest-fila-${entry.id}`)}
+                                    onClick={() => void handleAddGuestToQueue(entry)}
+                                    className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
                                   >
+                                    {isBusy(`guest-fila-${entry.id}`) ? (
+                                      <BtnSpinner className="h-3.5 w-3.5" />
+                                    ) : null}
                                     Para fila
                                   </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveGuest(entry.id)}
-                                    className="h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide"
-                                  >
-                                    Excluir
-                                  </button>
+                                  {isDj && (
+                                    <button
+                                      type="button"
+                                      disabled={isBusy(`guest-remove-${entry.id}`)}
+                                      aria-busy={isBusy(`guest-remove-${entry.id}`)}
+                                      onClick={() => void handleRemoveGuest(entry.id)}
+                                      className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                                    >
+                                      {isBusy(`guest-remove-${entry.id}`) ? (
+                                        <BtnSpinner className="h-3.5 w-3.5" />
+                                      ) : null}
+                                      Excluir
+                                    </button>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -709,13 +903,20 @@ const KaraokePage: React.FC = () => {
                               <td className="py-3 px-4 text-[#3d2b1f] font-medium">{entry.song}</td>
                               <td className="py-3 px-4">
                                 <div className="flex items-center justify-end">
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveOther(entry.id)}
-                                    className="h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide"
-                                  >
-                                    Excluir
-                                  </button>
+                                  {isDj && (
+                                    <button
+                                      type="button"
+                                      disabled={isBusy(`other-remove-${entry.id}`)}
+                                      aria-busy={isBusy(`other-remove-${entry.id}`)}
+                                      onClick={() => void handleRemoveOther(entry.id)}
+                                      className="inline-flex items-center justify-center gap-2 min-w-[5.5rem] h-9 px-4 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                                    >
+                                      {isBusy(`other-remove-${entry.id}`) ? (
+                                        <BtnSpinner className="h-3.5 w-3.5" />
+                                      ) : null}
+                                      Excluir
+                                    </button>
+                                  )}
                                 </div>
                               </td>
                             </tr>
@@ -746,6 +947,7 @@ const KaraokePage: React.FC = () => {
                         <input
                           ref={nameInputRef}
                           value={queueName}
+                          disabled={isBusy('queue')}
                           onChange={(event) => {
                             setQueueName(event.target.value);
                             setQueueError('');
@@ -756,7 +958,7 @@ const KaraokePage: React.FC = () => {
                           }}
                           onKeyDown={handleNameKeyDown}
                           placeholder="Nome do convidado"
-                          className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm"
+                          className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                         />
                         {isNameFocused && nameSuggestions.length > 0 && (
                           <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-[#e6d5c3] bg-white shadow-lg max-h-56 overflow-y-auto">
@@ -786,6 +988,7 @@ const KaraokePage: React.FC = () => {
                         <input
                           ref={songInputRef}
                           value={queueSong}
+                          disabled={isBusy('queue')}
                           onChange={(event) => {
                             setQueueSong(event.target.value);
                             setQueueError('');
@@ -796,7 +999,7 @@ const KaraokePage: React.FC = () => {
                           }}
                           onKeyDown={handleSongKeyDown}
                           placeholder="Nome da música e artista"
-                          className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm"
+                          className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                         />
                         {isSongFocused && songSuggestions.length > 0 && (
                           <div className="absolute z-20 mt-2 w-full overflow-hidden rounded-xl border border-[#e6d5c3] bg-white shadow-lg max-h-56 overflow-y-auto">
@@ -842,9 +1045,12 @@ const KaraokePage: React.FC = () => {
                       </div>
                       <button
                         type="submit"
-                        className="w-full md:w-auto px-6 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors"
+                        disabled={isBusy('queue')}
+                        aria-busy={isBusy('queue')}
+                        className="w-full md:w-auto min-w-[10rem] inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
                       >
-                        Entrar na fila
+                        {isBusy('queue') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
+                        {isBusy('queue') ? 'Enviando…' : 'Entrar na fila'}
                       </button>
                     </form>
                     {queueError && <p className="mt-3 text-sm text-rose-600">{queueError}</p>}
@@ -875,6 +1081,10 @@ const KaraokePage: React.FC = () => {
                               index={index}
                               isDragging={draggingId === entry.id}
                               isOver={overId === entry.id}
+                              isDj={isDj}
+                              dragDisabled={pendingAction === 'reorder'}
+                              skipLoading={isBusy(`skip-${entry.id}`)}
+                              removeLoading={isBusy(`remove-q-${entry.id}`)}
                               onSkip={handleSkipQueue}
                               onRemove={handleRemoveQueue}
                             />
@@ -932,7 +1142,7 @@ const KaraokePage: React.FC = () => {
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
-                  handleAddGuestSingle();
+                  void handleAddGuestSingle();
                 }}
                 className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end mb-6"
               >
@@ -940,31 +1150,36 @@ const KaraokePage: React.FC = () => {
                   <label className="text-xs uppercase tracking-wide text-gray-500">Convidado</label>
                   <input
                     value={singleGuestName}
+                    disabled={isBusy('guest-single') || isBusy('guest-bulk')}
                     onChange={(event) => {
                       setSingleGuestName(event.target.value);
                       setSingleGuestError('');
                     }}
                     placeholder="Nome do convidado"
-                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                   />
                 </div>
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wide text-gray-500">Música</label>
                   <input
                     value={singleGuestSong}
+                    disabled={isBusy('guest-single') || isBusy('guest-bulk')}
                     onChange={(event) => {
                       setSingleGuestSong(event.target.value);
                       setSingleGuestError('');
                     }}
                     placeholder="Nome da música e artista"
-                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full md:w-auto px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors"
+                  disabled={isBusy('guest-single') || isBusy('guest-bulk')}
+                  aria-busy={isBusy('guest-single')}
+                  className="w-full md:w-auto min-w-[8rem] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
                 >
-                  Adicionar
+                  {isBusy('guest-single') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
+                  {isBusy('guest-single') ? 'Enviando…' : 'Adicionar'}
                 </button>
               </form>
               {singleGuestError && <p className="text-sm text-rose-600 mb-6">{singleGuestError}</p>}
@@ -974,17 +1189,21 @@ const KaraokePage: React.FC = () => {
                   <h4 className="text-lg font-serif text-[#3d2b1f]">Adicionar em lote</h4>
                   <button
                     type="button"
-                    onClick={handleAddGuestBulk}
-                    className="px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide"
+                    disabled={isBusy('guest-single') || isBusy('guest-bulk')}
+                    aria-busy={isBusy('guest-bulk')}
+                    onClick={() => void handleAddGuestBulk()}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
                   >
-                    Importar linhas
+                    {isBusy('guest-bulk') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                    {isBusy('guest-bulk') ? 'Importando…' : 'Importar linhas'}
                   </button>
                 </div>
                 <textarea
                   value={bulkText}
+                  disabled={isBusy('guest-single') || isBusy('guest-bulk')}
                   onChange={(event) => setBulkText(event.target.value)}
                   placeholder={`Mateus Ramos Batschauer: Não é sério - Charlie Brown Jr.\nTaciana Floriani: Aquarela - Toquinho`}
-                  className="w-full min-h-[160px] px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm"
+                  className="w-full min-h-[160px] px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                 />
                 <div className="mt-4 space-y-3">
                   {bulkAddedCount !== null && (
@@ -1041,7 +1260,7 @@ const KaraokePage: React.FC = () => {
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
-                  handleAddOtherSingle();
+                  void handleAddOtherSingle();
                 }}
                 className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end mb-6"
               >
@@ -1049,19 +1268,23 @@ const KaraokePage: React.FC = () => {
                   <label className="text-xs uppercase tracking-wide text-gray-500">Música</label>
                   <input
                     value={singleOtherSong}
+                    disabled={isBusy('other-single') || isBusy('other-bulk')}
                     onChange={(event) => {
                       setSingleOtherSong(event.target.value);
                       setSingleOtherError('');
                     }}
                     placeholder="Nome da música e artista"
-                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm"
+                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="w-full md:w-auto px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors"
+                  disabled={isBusy('other-single') || isBusy('other-bulk')}
+                  aria-busy={isBusy('other-single')}
+                  className="w-full md:w-auto min-w-[8rem] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
                 >
-                  Adicionar
+                  {isBusy('other-single') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
+                  {isBusy('other-single') ? 'Enviando…' : 'Adicionar'}
                 </button>
               </form>
               {singleOtherError && <p className="text-sm text-rose-600 mb-6">{singleOtherError}</p>}
@@ -1071,17 +1294,21 @@ const KaraokePage: React.FC = () => {
                   <h4 className="text-lg font-serif text-[#3d2b1f]">Adicionar em lote</h4>
                   <button
                     type="button"
-                    onClick={handleAddOtherBulk}
-                    className="px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide"
+                    disabled={isBusy('other-single') || isBusy('other-bulk')}
+                    aria-busy={isBusy('other-bulk')}
+                    onClick={() => void handleAddOtherBulk()}
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
                   >
-                    Importar linhas
+                    {isBusy('other-bulk') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                    {isBusy('other-bulk') ? 'Importando…' : 'Importar linhas'}
                   </button>
                 </div>
                 <textarea
                   value={otherBulkText}
+                  disabled={isBusy('other-single') || isBusy('other-bulk')}
                   onChange={(event) => setOtherBulkText(event.target.value)}
                   placeholder={`Não é sério - Charlie Brown Jr.\nAquarela - Toquinho`}
-                  className="w-full min-h-[160px] px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm"
+                  className="w-full min-h-[160px] px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                 />
                 <div className="mt-4 space-y-3">
                   {otherBulkAddedCount !== null && (
@@ -1106,6 +1333,72 @@ const KaraokePage: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isDjModalOpen && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60"
+          onClick={() => {
+            setIsDjModalOpen(false);
+            setDjError('');
+          }}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-6 md:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="dj-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 id="dj-modal-title" className="text-xl font-serif text-[#8b5e3c] mb-2">
+              Modo DJ
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">Digite o PIN para gerir a fila e as listas.</p>
+            <form
+              onSubmit={(event) => {
+                event.preventDefault();
+                void (async () => {
+                  setPendingAction('dj-login');
+                  try {
+                    await loginDj(djPinInput);
+                    setIsDjModalOpen(false);
+                    setDjPinInput('');
+                    setDjError('');
+                    pushGuestMessage('Modo DJ ativado.', 'success');
+                  } catch (err) {
+                    setDjError(err instanceof Error ? err.message : 'PIN inválido');
+                  } finally {
+                    setPendingAction(null);
+                  }
+                })();
+              }}
+              className="space-y-4"
+            >
+              <input
+                type="password"
+                autoComplete="current-password"
+                value={djPinInput}
+                disabled={isBusy('dj-login')}
+                onChange={(event) => {
+                  setDjPinInput(event.target.value);
+                  setDjError('');
+                }}
+                placeholder="PIN"
+                className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
+              />
+              {djError && <p className="text-sm text-rose-600">{djError}</p>}
+              <button
+                type="submit"
+                disabled={isBusy('dj-login')}
+                aria-busy={isBusy('dj-login')}
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
+              >
+                {isBusy('dj-login') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
+                {isBusy('dj-login') ? 'Entrando…' : 'Entrar'}
+              </button>
+            </form>
           </div>
         </div>
       )}
