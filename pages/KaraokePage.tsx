@@ -154,12 +154,12 @@ const QueueRow: React.FC<QueueRowProps> = ({
         .filter(Boolean)
         .join(' ')}
     >
-      <td className="hidden md:table-cell py-3 px-4 align-top">
+      <td className="hidden md:table-cell py-3 px-4 align-middle">
         <span className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold ${statusTone}`}>
           {statusLabel}
         </span>
       </td>
-      <td className="py-3 px-4 text-[#3d2b1f] font-medium align-top">
+      <td className="py-3 px-4 align-middle text-[#3d2b1f] font-medium">
         <span
           className={`md:hidden inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold mb-2 ${statusTone}`}
         >
@@ -168,7 +168,7 @@ const QueueRow: React.FC<QueueRowProps> = ({
         <span className="block">{item.name}</span>
         <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">{item.song}</span>
         {isDj ? (
-          <div className="md:hidden mt-3 pt-3 border-t border-[#8b5e3c]/10 flex flex-wrap items-center gap-2">
+          <div className="md:hidden mt-3 pt-3 border-t border-[#8b5e3c]/10 flex flex-nowrap items-center gap-2">
             <button
               type="button"
               disabled={queueActionBusy}
@@ -203,11 +203,11 @@ const QueueRow: React.FC<QueueRowProps> = ({
               ref={mobileDragRef}
               type="button"
               disabled={dragDisabled || queueActionBusy}
-              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8b5e3c]/30 p-0 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
               title="Arrastar para reordenar"
               aria-label="Arrastar para reordenar"
             >
-              <GripVertical className="h-4 w-4" aria-hidden strokeWidth={1.75} />
+              <GripVertical className="h-4 w-4 shrink-0" aria-hidden strokeWidth={1.75} />
             </button>
             <button
               type="button"
@@ -227,10 +227,10 @@ const QueueRow: React.FC<QueueRowProps> = ({
           </div>
         ) : null}
       </td>
-      <td className="hidden md:table-cell py-3 px-4 text-gray-600">{item.song}</td>
+      <td className="hidden md:table-cell py-3 px-4 align-middle text-gray-600">{item.song}</td>
       {isDj ? (
-        <td className="hidden md:table-cell py-3 px-4">
-          <div className="flex flex-wrap items-center justify-end gap-2">
+        <td className="hidden md:table-cell py-3 px-4 align-middle">
+          <div className="flex flex-nowrap items-center justify-end gap-2">
             <button
               type="button"
               disabled={queueActionBusy}
@@ -238,15 +238,12 @@ const QueueRow: React.FC<QueueRowProps> = ({
               aria-label="Próximo na fila"
               title="Tornar o próximo da fila (logo após quem está cantando)"
               onClick={() => void onMoveToNext(item.id)}
-              className="inline-flex items-center justify-center gap-1.5 min-h-9 min-w-[5.5rem] shrink-0 rounded-full border border-[#8b5e3c]/25 text-[#6b4a2f] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide px-4 disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8b5e3c]/25 p-0 text-[#6b4a2f] hover:bg-[#8b5e3c]/10 transition-colors disabled:opacity-60 disabled:pointer-events-none"
             >
               {moveToNextLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
               ) : (
-                <>
-                  <SkipForward className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                  <span>Próximo</span>
-                </>
+                <SkipForward className="h-4 w-4 shrink-0" aria-hidden strokeWidth={1.75} />
               )}
             </button>
             <button
@@ -256,26 +253,23 @@ const QueueRow: React.FC<QueueRowProps> = ({
               aria-label="Pular para o fim da fila"
               title="Pular para o fim da fila"
               onClick={() => void onSkip(item.id)}
-              className="inline-flex items-center justify-center gap-1.5 min-h-9 min-w-[5.5rem] shrink-0 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide px-4 disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8b5e3c]/30 p-0 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors disabled:opacity-60 disabled:pointer-events-none"
             >
               {skipLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
               ) : (
-                <>
-                  <ListEnd className="h-3.5 w-3.5 shrink-0" aria-hidden />
-                  <span>Pular</span>
-                </>
+                <ListEnd className="h-4 w-4 shrink-0" aria-hidden strokeWidth={1.75} />
               )}
             </button>
             <button
               ref={desktopDragRef}
               type="button"
               disabled={dragDisabled || queueActionBusy}
-              className="h-9 w-9 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8b5e3c]/30 p-0 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors cursor-grab active:cursor-grabbing disabled:opacity-50 disabled:cursor-not-allowed"
               title="Arrastar para reordenar"
               aria-label="Arrastar para reordenar"
             >
-              <GripVertical className="h-4 w-4" aria-hidden strokeWidth={1.75} />
+              <GripVertical className="h-4 w-4 shrink-0" aria-hidden strokeWidth={1.75} />
             </button>
             <button
               type="button"
@@ -284,12 +278,12 @@ const QueueRow: React.FC<QueueRowProps> = ({
               aria-label="Excluir"
               title="Excluir"
               onClick={() => void onRemove(item.id)}
-              className="inline-flex items-center justify-center gap-1.5 min-h-9 min-w-[5.5rem] shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide px-4 disabled:opacity-60 disabled:pointer-events-none"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-rose-200 p-0 text-rose-600 hover:bg-rose-50 transition-colors disabled:opacity-60 disabled:pointer-events-none"
             >
               {removeLoading ? (
                 <BtnSpinner className="h-3.5 w-3.5" />
               ) : (
-                <span>Excluir</span>
+                <IconTrash className="h-4 w-4 shrink-0" strokeWidth={1.75} />
               )}
             </button>
           </div>
@@ -1308,15 +1302,17 @@ const KaraokePage: React.FC = () => {
                     <table className="w-full border-collapse">
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
-                          <th className="hidden md:table-cell text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                          <th className="hidden md:table-cell align-middle text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
                             Status
                           </th>
-                          <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Convidado</th>
-                          <th className="hidden md:table-cell text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                          <th className="align-middle text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                            Convidado
+                          </th>
+                          <th className="hidden md:table-cell align-middle text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
                             Música
                           </th>
                           {isDj ? (
-                            <th className="hidden md:table-cell text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
+                            <th className="hidden md:table-cell align-middle text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">
                               Ações
                             </th>
                           ) : null}
