@@ -6,6 +6,7 @@ import HomePage from './pages/HomePage';
 import PresentesPage from './pages/PresentesPage';
 import HospedagemPage from './pages/HospedagemPage';
 import KaraokePage from './pages/KaraokePage';
+import GamePage from './pages/GamePage';
 
 /**
  * Detects which subdomain we're on to render the appropriate page.
@@ -41,6 +42,7 @@ const SubdomainRouter: React.FC = () => {
       <Route path="/presentes" element={<PresentesPage />} />
       <Route path="/hospedagem" element={<HospedagemPage />} />
       <Route path="/karaoke" element={<KaraokePage />} />
+      <Route path="/game" element={<GamePage />} />
     </Routes>
   );
 };
