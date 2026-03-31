@@ -57,7 +57,7 @@ export const finale = {
     'Olá queridos! Estamos muito ansiosos, o dia está chegando!! Decidimos criar o grupo para já começarmos a nos organizar para este fim de semana tão especial.',
   /** Check-in / calendário — entre a abertura e o calendário; “Vocês são…” vem depois do calendário. */
   scheduleIntro:
-    'Faremos check-in no dia 17 de abril (sexta-feira, que inclusive é aniversário do Noivo) às 14h e check-out no dia 19 de abril (domingo) às 18h. Estamos planejando um cronograma para aproveitarmos ao máximo esses dias, quando o tivermos mandaremos para vocês.',
+    'Faremos check-in no dia 17 de abril (sexta-feira, que inclusive é aniversário do Noivo) às 14h e check-out no dia 19 de abril (domingo) às 18h. Estamos planejando um cronograma para aproveitarmos ao máximo esses dias, quando o tivermos mandaremos para vocês. Segue uma prévia:',
   /** Continuação após o calendário. */
   paragraphs: [
     'Vocês são pessoas muito especiais nas nossas vidas. Dos 100 convidados que estarão no dia da festa vocês todos foram escolhidos a dedo para estarem conosco no fim de semana e por esse motivo decidimos chamá-los de ✨GUARDIÕES✨.',

@@ -25,6 +25,20 @@ function isStepFinaleSearch(search: string): boolean {
   return new URLSearchParams(search).get('step') === 'finale';
 }
 
+/** Marca ✨GUARDIÕES✨ em negrito nos parágrafos da carta final. */
+function formatGuardioesBold(text: string): React.ReactNode {
+  const parts = text.split(/(✨GUARDIÕES✨)/);
+  return parts.map((part, i) =>
+    part === '✨GUARDIÕES✨' ? (
+      <strong key={i} className="font-semibold text-inherit">
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
+  );
+}
+
 const GamePage: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [phase, setPhase] = useState<GamePhase>(() =>
@@ -430,7 +444,7 @@ const GamePage: React.FC = () => {
             </div>
             <div className="text-left space-y-4 text-[#333]/90 leading-relaxed mb-8">
               {finale.paragraphs.map((p, i) => (
-                <p key={i}>{p}</p>
+                <p key={i}>{formatGuardioesBold(p)}</p>
               ))}
             </div>
             <p className="font-serif italic text-[#3d2b1f]/90 mb-8">{finale.signature}</p>
