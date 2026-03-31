@@ -24,8 +24,8 @@ export const intro = {
 export const room1 = {
   title: 'Salão I — O Chapéu Falante',
   prompt:
-    'Quando você entra no primeiro salão, vê um chapéu.\nEle diz: "Se você me disser onde a Yosha e o Mark se conheceram, eu deixo você passar."',
-  submitLabel: 'Responder ao chapéu',
+    'Quando você entra no primeiro salão, vê um chapéu e um mapa bem grande.\nEle diz: "Se você indicar corretamente o local onde tudo começou, eu lhe deixarei passar."',
+  submitLabel: 'Apontar',
   /** Substitua por pistas reais; todas as variantes aceitas. */
   acceptedAnswers: ['udesc', 'didico', 'didicos', 'florianopolis', 'florianópolis', 'floripa'],
   /** Texto após acerto — confirma a resposta. */
