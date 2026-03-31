@@ -24,26 +24,31 @@ const getSubdomain = (): 'presentes' | 'hospedagem' | 'karaoke' | null => {
 };
 
 /**
- * Wrapper component that handles subdomain-based routing.
- * If on a specific subdomain, renders that page directly.
- * Otherwise, falls back to route-based navigation for local development.
+ * Router unificado: sempre usa Routes para o React Router casar /missao em qualquer
+ * host (incl. subdomínios). Rotas mais específicas (/missao) têm prioridade sobre
+ * o catch-all /* do subdomínio.
  */
 const SubdomainRouter: React.FC = () => {
   const subdomain = getSubdomain();
-  
-  // Subdomain detected - render the appropriate page directly
-  if (subdomain === 'presentes') return <PresentesPage />;
-  if (subdomain === 'hospedagem') return <HospedagemPage />;
-  if (subdomain === 'karaoke') return <KaraokePage />;
-  // No subdomain (root domain/localhost) - use route-based navigation
+
   return (
     <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/presentes" element={<PresentesPage />} />
-      <Route path="/hospedagem" element={<HospedagemPage />} />
-      <Route path="/karaoke" element={<KaraokePage />} />
       <Route path="/missao" element={<GamePage />} />
       <Route path="/game" element={<Navigate to="/missao" replace />} />
+      {subdomain === null ? (
+        <>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/presentes" element={<PresentesPage />} />
+          <Route path="/hospedagem" element={<HospedagemPage />} />
+          <Route path="/karaoke" element={<KaraokePage />} />
+        </>
+      ) : subdomain === 'presentes' ? (
+        <Route path="/*" element={<PresentesPage />} />
+      ) : subdomain === 'hospedagem' ? (
+        <Route path="/*" element={<HospedagemPage />} />
+      ) : (
+        <Route path="/*" element={<KaraokePage />} />
+      )}
     </Routes>
   );
 };
