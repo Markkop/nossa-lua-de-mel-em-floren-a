@@ -30,7 +30,7 @@ export const room1 = {
   acceptedAnswers: ['udesc', 'didico', 'didicos', 'florianopolis', 'florianópolis', 'floripa'],
   /** Texto após acerto — confirma a resposta. */
   flavorText:
-    'Foi no Didicos, um bar próximo à UDESC, em Floripa onde o primeiro olhar virou história.',
+    '"Isso mesmo!" - responde o chapéu. "O local onde o primeiro olhar virou história foi em Floripa, em um bar chamado Didicos que ficava próximo da UDESC".\nVocê acena e abre a próxima porta.',
 };
 
 export const room2 = {
@@ -43,7 +43,8 @@ export const room2 = {
     { id: 'c', label: '40 cm' },
   ] as const,
   correctId: 'c' as const,
-  flavorText: 'E o nosso amor é gigante e do mesmo tamanho!',
+  flavorText:
+    'Ao ajustar o segundo manequim, você ouve um "click" e os manequins se abraçam, um na ponta dos pés e o outro com a coluna curvada.\nUma porta abre aos fundos.\nÉ chegado o desafio final.',
 };
 
 export const room3 = {
@@ -52,7 +53,8 @@ export const room3 = {
     'Após entrar pela terceira e última porta, você avista um boneco de pano bem no meio do salão.\nEle aparenta ser metade noivo e metade noiva.\nAo lado, um baú que só abre com um código.',
   submitLabel: 'Abrir o baú',
   acceptedAnswers: ['yoshark'],
-  flavorText: 'Yosha + Mark 😜',
+  flavorText:
+    'Você abre o baú e o salão se enche de coraçõezinhos.\nDentro há uma carta...',
 };
 
 export const finale = {

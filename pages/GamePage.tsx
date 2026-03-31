@@ -298,7 +298,10 @@ const GamePage: React.FC = () => {
                 </form>
               </div>
               <div className={`flip-card-face flip-card-back ${cardClass}`}>
-                <p className="text-center text-[#333]/90 leading-relaxed text-sm md:text-base flex-1 flex items-center" role="status">
+                <p
+                  className="text-center text-[#333]/90 leading-relaxed text-sm md:text-base flex-1 flex flex-col justify-center items-center whitespace-pre-line"
+                  role="status"
+                >
                   {room1.flavorText}
                 </p>
                 <button
@@ -374,7 +377,10 @@ const GamePage: React.FC = () => {
                 </form>
               </div>
               <div className={`flip-card-face flip-card-back ${cardClass}`}>
-                <p className="text-center text-[#333]/90 leading-relaxed text-sm md:text-base flex-1 flex items-center" role="status">
+                <p
+                  className="text-center text-[#333]/90 leading-relaxed text-sm md:text-base flex-1 flex flex-col justify-center items-center whitespace-pre-line"
+                  role="status"
+                >
                   {room2.flavorText}
                 </p>
                 <button
@@ -433,7 +439,10 @@ const GamePage: React.FC = () => {
                 </form>
               </div>
               <div className={`flip-card-face flip-card-back ${cardClass}`}>
-                <p className="text-center text-[#333]/90 leading-relaxed text-sm md:text-base flex-1 flex items-center" role="status">
+                <p
+                  className="text-center text-[#333]/90 leading-relaxed text-sm md:text-base flex-1 flex flex-col justify-center items-center whitespace-pre-line"
+                  role="status"
+                >
                   {room3.flavorText}
                 </p>
                 <button
