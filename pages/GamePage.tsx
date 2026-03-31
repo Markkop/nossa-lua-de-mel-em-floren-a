@@ -442,7 +442,7 @@ const GamePage: React.FC = () => {
                       clearError();
                     }}
                     autoComplete="off"
-                    className="w-full px-4 py-3 rounded-xl border border-[#3d2b1f]/20 bg-[#fdfbf7] text-base focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30"
+                    className="w-full px-4 py-3 rounded-xl border border-[#3d2b1f]/20 bg-[#fdfbf7] text-base [touch-action:manipulation] focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30"
                     placeholder="Sua resposta"
                     enterKeyHint="go"
                   />
@@ -595,7 +595,7 @@ const GamePage: React.FC = () => {
                         maxLength={1}
                         enterKeyHint={index === ROOM3_PASSWORD_LENGTH - 1 ? 'go' : 'next'}
                         aria-label={`Letra ${index + 1} da senha`}
-                        className="h-9 w-9 rounded-md border border-[#3d2b1f]/20 bg-[#fdfbf7] text-center text-base font-semibold uppercase shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30"
+                        className="h-9 w-9 rounded-md border border-[#3d2b1f]/20 bg-[#fdfbf7] text-center text-base font-semibold uppercase shadow-sm [touch-action:manipulation] focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30"
                       />
                     ))}
                   </div>
