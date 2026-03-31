@@ -47,6 +47,14 @@ function sanitizeRoom3Letters(value: string): string[] {
     .split('');
 }
 
+function blurActiveElement(): void {
+  if (typeof document === 'undefined') return;
+  const active = document.activeElement;
+  if (active instanceof HTMLElement) {
+    active.blur();
+  }
+}
+
 /** Debug: `/missao?step=finale` abre direto na tela final. */
 function isStepFinaleSearch(search: string): boolean {
   return new URLSearchParams(search).get('step') === 'finale';
@@ -351,6 +359,7 @@ const GamePage: React.FC = () => {
     e.preventDefault();
     const n = normalizeAnswer(r1);
     if (room1.acceptedAnswers.some((a) => normalizeAnswer(a) === n)) {
+      blurActiveElement();
       clearError();
       setR1('');
       setSalonFlipped(true);
@@ -361,6 +370,7 @@ const GamePage: React.FC = () => {
 
   const tryRoom2 = () => {
     if (r2 === room2.correctId) {
+      blurActiveElement();
       clearError();
       setR2(null);
       setSalonFlipped(true);
@@ -373,6 +383,7 @@ const GamePage: React.FC = () => {
     e.preventDefault();
     const n = normalizeAnswer(r3.join(''));
     if (room3.acceptedAnswers.some((a) => normalizeAnswer(a) === n)) {
+      blurActiveElement();
       clearError();
       setSalonFlipped(true);
     } else {
