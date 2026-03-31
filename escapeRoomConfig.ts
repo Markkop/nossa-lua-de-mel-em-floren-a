@@ -48,10 +48,10 @@ export const room2 = {
 };
 
 export const room3 = {
-  title: 'Salão III — O código',
+  title: 'Salão III — A senha',
   prompt:
-    'Após entrar pela terceira e última porta, você avista um boneco de pano bem no meio do salão.\nEle aparenta ser metade noivo e metade noiva.\nAo lado, um baú que só abre com um código.',
-  submitLabel: 'Abrir o baú',
+    'Após entrar pela terceira e última porta, você avista um boneco de pano bem no meio do salão.\nEle aparenta ser metade noiva e metade noivo.\nAo lado, um baú que só abre com uma senha.',
+  submitLabel: 'Usar a senha',
   acceptedAnswers: ['yoshark'],
   flavorText:
     'Você abre o baú e o salão se enche de coraçõezinhos.\nDentro há uma carta...',

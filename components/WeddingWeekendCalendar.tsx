@@ -16,21 +16,16 @@ const EVENTS: Record<number, { weekday: string; items: string[] }> = {
       'Aniversário do Noivo',
       'Check-in 14:00',
       'Cidade Dorme (será gravado!)',
-      'Tragam comidinhas',
+      'Piscina',
     ],
   },
   18: {
     weekday: 'Sábado',
-    items: [
-      'Almoço coletivo',
-      'Cerimônia 16:00',
-      'Festa até duas da manhã',
-      'After até o amanhecer',
-    ],
+    items: ['Cerimônia 16:00', 'Festa até duas da manhã', 'After até o amanhecer'],
   },
   19: {
     weekday: 'Domingo',
-    items: ['Almoço Coletivo', 'Checkout 18:00'],
+    items: ['Checkout 18:00'],
   },
 };
 

@@ -30,9 +30,22 @@ const StepIndicator: React.FC<{ step: 1 | 2 | 3; onPrev: () => void }> = ({ step
 );
 
 const ROOM2_OPTION_IDS = room2.options.map((o) => o.id);
+const ROOM3_PASSWORD_LENGTH = room3.acceptedAnswers[0]?.length ?? 7;
 
 /** Texto compartilhado ao “mandar estrelinha” (missão do grupo). */
 const SHARE_ESTRELINHA_TEXT = '✨';
+
+function createEmptyRoom3Answer(): string[] {
+  return Array.from({ length: ROOM3_PASSWORD_LENGTH }, () => '');
+}
+
+function sanitizeRoom3Letters(value: string): string[] {
+  return value
+    .replace(/[^a-zA-Z]/g, '')
+    .toUpperCase()
+    .slice(0, ROOM3_PASSWORD_LENGTH)
+    .split('');
+}
 
 /** Debug: `/missao?step=finale` abre direto na tela final. */
 function isStepFinaleSearch(search: string): boolean {
@@ -60,15 +73,19 @@ const GamePage: React.FC = () => {
   );
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState<string | null>(null);
-  const [r3, setR3] = useState('');
+  const [r3, setR3] = useState<string[]>(() => createEmptyRoom3Answer());
   const [error, setError] = useState<string | null>(null);
+  const [shareFeedback, setShareFeedback] = useState<{ message: string; tone: 'neutral' | 'error' } | null>(
+    null,
+  );
   /** Carta virada para o verso (texto) após acerto no salão atual. */
   const [salonFlipped, setSalonFlipped] = useState(false);
 
   const introCtaRef = useRef<HTMLButtonElement>(null);
-  const answerInputRef = useRef<HTMLInputElement>(null);
+  const room1InputRef = useRef<HTMLInputElement>(null);
   const continueAfterFlipRef = useRef<HTMLButtonElement>(null);
   const room2FirstRadioRef = useRef<HTMLInputElement>(null);
+  const room3InputRefs = useRef<Array<HTMLInputElement | null>>([]);
 
   useEffect(() => {
     const prev = document.title;
@@ -85,13 +102,26 @@ const GamePage: React.FC = () => {
     return () => window.cancelAnimationFrame(t);
   }, [phase]);
 
-  /** Foco no campo de resposta (salões I e III). */
+  /** Foco no campo de resposta do salão I. */
   useEffect(() => {
     if (salonFlipped) return;
-    if (phase === 'room1' || phase === 'room3') {
-      const t = window.setTimeout(() => answerInputRef.current?.focus(), 0);
+    if (phase === 'room1') {
+      const t = window.setTimeout(() => room1InputRef.current?.focus(), 0);
       return () => window.clearTimeout(t);
     }
+  }, [phase, salonFlipped]);
+
+  /** Foco na primeira caixa vazia da senha do salão III. */
+  useEffect(() => {
+    if (salonFlipped || phase !== 'room3') return;
+    const t = window.setTimeout(() => {
+      const emptyIndex = r3.findIndex((char) => !char);
+      const focusIndex = emptyIndex === -1 ? ROOM3_PASSWORD_LENGTH - 1 : emptyIndex;
+      const target = room3InputRefs.current[focusIndex];
+      target?.focus();
+      target?.select();
+    }, 0);
+    return () => window.clearTimeout(t);
   }, [phase, salonFlipped]);
 
   /** Foco no primeiro rádio do salão II. */
@@ -116,11 +146,29 @@ const GamePage: React.FC = () => {
     setSalonFlipped(false);
     setR1('');
     setR2(null);
-    setR3('');
+    setR3(createEmptyRoom3Answer());
     setError(null);
   }, [searchParams]);
 
+  useEffect(() => {
+    if (shareFeedback == null) return;
+    const t = window.setTimeout(() => setShareFeedback(null), 3200);
+    return () => window.clearTimeout(t);
+  }, [shareFeedback]);
+
   const clearError = () => setError(null);
+
+  const focusRoom3Input = (index: number) => {
+    const safeIndex = Math.max(0, Math.min(index, ROOM3_PASSWORD_LENGTH - 1));
+    const target = room3InputRefs.current[safeIndex];
+    target?.focus();
+    target?.select();
+  };
+
+  const setRoom3Chars = (updater: (prev: string[]) => string[]) => {
+    setR3((prev) => updater([...prev]));
+    clearError();
+  };
 
   const resetGame = () => {
     setSearchParams(
@@ -134,31 +182,145 @@ const GamePage: React.FC = () => {
     setPhase('intro');
     setR1('');
     setR2(null);
-    setR3('');
+    setR3(createEmptyRoom3Answer());
     setError(null);
+    setShareFeedback(null);
     setSalonFlipped(false);
   };
 
   const shareEstrelinha = async () => {
-    try {
-      if (typeof navigator !== 'undefined' && navigator.share) {
-        await navigator.share({ text: SHARE_ESTRELINHA_TEXT });
-        return;
-      }
+    setShareFeedback(null);
+
+    const copyEstrelinha = async () => {
       if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
         await navigator.clipboard.writeText(SHARE_ESTRELINHA_TEXT);
+        setShareFeedback({
+          message: 'Estrelinha copiada. Agora é só colar no grupo.',
+          tone: 'neutral',
+        });
+        return true;
       }
+      setShareFeedback({
+        message: 'Não deu para compartilhar automaticamente neste aparelho.',
+        tone: 'error',
+      });
+      return false;
+    };
+
+    try {
+      if (typeof navigator !== 'undefined' && typeof window !== 'undefined' && navigator.share) {
+        const shareData = {
+          title: document.title,
+          text: SHARE_ESTRELINHA_TEXT,
+          url: window.location.href,
+        };
+        const fallbackShareData = {
+          text: `${SHARE_ESTRELINHA_TEXT}\n${window.location.href}`,
+        };
+
+        if (typeof navigator.canShare !== 'function' || navigator.canShare(shareData)) {
+          await navigator.share(shareData);
+        } else {
+          await navigator.share(fallbackShareData);
+        }
+        return;
+      }
+      await copyEstrelinha();
     } catch (err) {
       const e = err as { name?: string };
       if (e?.name === 'AbortError') return;
       try {
-        if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-          await navigator.clipboard.writeText(SHARE_ESTRELINHA_TEXT);
-        }
+        await copyEstrelinha();
       } catch {
         /* ignore */
       }
     }
+  };
+
+  const handleRoom3InputChange = (index: number, rawValue: string) => {
+    const letters = sanitizeRoom3Letters(rawValue);
+    if (rawValue === '') {
+      setRoom3Chars((prev) => {
+        prev[index] = '';
+        return prev;
+      });
+      return;
+    }
+
+    if (letters.length === 0) {
+      return;
+    }
+
+    let nextFocusIndex = index;
+    setRoom3Chars((prev) => {
+      letters.forEach((letter, offset) => {
+        const targetIndex = index + offset;
+        if (targetIndex >= ROOM3_PASSWORD_LENGTH) return;
+        prev[targetIndex] = letter;
+        nextFocusIndex = targetIndex;
+      });
+      return prev;
+    });
+
+    window.setTimeout(() => focusRoom3Input(Math.min(nextFocusIndex + 1, ROOM3_PASSWORD_LENGTH - 1)), 0);
+  };
+
+  const handleRoom3KeyDown = (index: number, e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Backspace') {
+      e.preventDefault();
+      if (r3[index]) {
+        setRoom3Chars((prev) => {
+          prev[index] = '';
+          return prev;
+        });
+        return;
+      }
+      if (index > 0) {
+        setRoom3Chars((prev) => {
+          prev[index - 1] = '';
+          return prev;
+        });
+        window.setTimeout(() => focusRoom3Input(index - 1), 0);
+      }
+      return;
+    }
+
+    if (e.key === 'Delete') {
+      e.preventDefault();
+      setRoom3Chars((prev) => {
+        prev[index] = '';
+        return prev;
+      });
+      return;
+    }
+
+    if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (index > 0) focusRoom3Input(index - 1);
+      return;
+    }
+
+    if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (index < ROOM3_PASSWORD_LENGTH - 1) focusRoom3Input(index + 1);
+      return;
+    }
+
+    if (e.key === 'Home') {
+      e.preventDefault();
+      focusRoom3Input(0);
+      return;
+    }
+
+    if (e.key === 'End') {
+      e.preventDefault();
+      focusRoom3Input(ROOM3_PASSWORD_LENGTH - 1);
+    }
+  };
+
+  const handleRoom3Paste = (index: number, e: React.ClipboardEvent<HTMLInputElement>) => {
+    e.preventDefault();
+    handleRoom3InputChange(index, e.clipboardData.getData('text'));
   };
 
   const handleRoom2KeyDown = (e: React.KeyboardEvent<HTMLFormElement>) => {
@@ -209,12 +371,12 @@ const GamePage: React.FC = () => {
 
   const tryRoom3 = (e: React.FormEvent) => {
     e.preventDefault();
-    const n = normalizeAnswer(r3);
+    const n = normalizeAnswer(r3.join(''));
     if (room3.acceptedAnswers.some((a) => normalizeAnswer(a) === n)) {
       clearError();
       setSalonFlipped(true);
     } else {
-      setError('Código incorreto.');
+      setError('Senha incorreta.');
     }
   };
 
@@ -272,7 +434,7 @@ const GamePage: React.FC = () => {
                     Resposta
                   </label>
                   <input
-                    ref={answerInputRef}
+                    ref={room1InputRef}
                     id="game-r1"
                     value={r1}
                     onChange={(e) => {
@@ -409,22 +571,34 @@ const GamePage: React.FC = () => {
                 </h2>
                 <p className="text-[#333]/90 mb-6 leading-relaxed whitespace-pre-line">{room3.prompt}</p>
                 <form onSubmit={tryRoom3} className="space-y-4" aria-labelledby="room3-heading">
-                  <label className="sr-only" htmlFor="game-r3">
-                    Código
+                  <label className="sr-only" htmlFor="game-r3-0">
+                    Senha
                   </label>
-                  <input
-                    ref={answerInputRef}
-                    id="game-r3"
-                    value={r3}
-                    onChange={(e) => {
-                      setR3(e.target.value);
-                      clearError();
-                    }}
-                    autoComplete="off"
-                    className="w-full px-4 py-3 rounded-xl border border-[#3d2b1f]/20 bg-[#fdfbf7] focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30 tracking-widest uppercase"
-                    placeholder="Código"
-                    enterKeyHint="go"
-                  />
+                  <div className="flex flex-wrap justify-center gap-2 sm:gap-3" role="group" aria-label="Senha">
+                    {r3.map((char, index) => (
+                      <input
+                        key={index}
+                        ref={(el) => {
+                          room3InputRefs.current[index] = el;
+                        }}
+                        id={`game-r3-${index}`}
+                        value={char}
+                        onChange={(e) => handleRoom3InputChange(index, e.target.value)}
+                        onKeyDown={(e) => handleRoom3KeyDown(index, e)}
+                        onPaste={(e) => handleRoom3Paste(index, e)}
+                        onFocus={(e) => e.target.select()}
+                        autoComplete="off"
+                        autoCapitalize="characters"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        inputMode="text"
+                        maxLength={1}
+                        enterKeyHint={index === ROOM3_PASSWORD_LENGTH - 1 ? 'go' : 'next'}
+                        aria-label={`Letra ${index + 1} da senha`}
+                        className="h-12 w-12 rounded-xl border border-[#3d2b1f]/20 bg-[#fdfbf7] text-center text-lg font-semibold uppercase shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30"
+                      />
+                    ))}
+                  </div>
                   {error && (
                     <p className="text-sm text-red-800/90" role="status">
                       {error}
@@ -497,6 +671,14 @@ const GamePage: React.FC = () => {
                 Mandar estrelinha
               </button>
             </div>
+            {shareFeedback && (
+              <p
+                className={`mt-4 text-sm ${shareFeedback.tone === 'error' ? 'text-red-800/90' : 'text-[#3d2b1f]/80'}`}
+                role="status"
+              >
+                {shareFeedback.message}
+              </p>
+            )}
           </div>
         )}
       </main>
