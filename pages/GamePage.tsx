@@ -200,7 +200,7 @@ const GamePage: React.FC = () => {
       clearError();
       setSalonFlipped(true);
     } else {
-      setError('Código incorreto. Releia as pistas dos salões.');
+      setError('Código incorreto.');
     }
   };
 

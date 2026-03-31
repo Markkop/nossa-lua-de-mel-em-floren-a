@@ -15,9 +15,9 @@ export function normalizeAnswer(input: string): string {
 }
 
 export const intro = {
-  title: 'Antes de tudo…',
+  title: 'Missão Secreta',
   body:
-    'Esta página é um segredo só para alguns amigos. Se você chegou até aqui, é porque confiamos em você. Três salões te esperam — e no fim, uma surpresa.',
+    'Você acaba de receber uma missão secreta digna de poucos. Responda às nossas perguntas e receba um chamado.',
   cta: 'Entrar no primeiro salão',
 };
 
