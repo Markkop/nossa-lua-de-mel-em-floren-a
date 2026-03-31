@@ -22,41 +22,44 @@ export const intro = {
 };
 
 export const room1 = {
-  title: 'Salão I — A cidade do sonho',
-  prompt:
-    'Onde Yosha e Mark vão celebrar a lua de mel com gelato na Ponte Vecchio? (uma palavra, cidade)',
-  hint: 'Começa com F e fica na Toscana.',
+  title: 'Salão I — Onde tudo começou',
+  prompt: 'Onde Yosha e Mark se conheceram?',
   /** Substitua por pistas reais; todas as variantes aceitas. */
-  acceptedAnswers: ['florenca', 'florença'],
+  acceptedAnswers: ['udesc', 'didico', 'didicos', 'florianopolis', 'florianópolis', 'floripa'],
+  /** Texto após acerto — confirma a resposta. */
+  flavorText:
+    'Foi no Didicos, um bar próximo à UDESC, em Floripa onde o primeiro olhar virou história.',
 };
 
 export const room2 = {
-  title: 'Salão II — Duas terras',
-  prompt: 'O amor deles atravessa dois lugares. Qual frase descreve melhor a história deles?',
-  hint: 'Pense na lua de mel e no casamento no Brasil.',
+  title: 'Salão II — Um amor sob medida',
+  prompt: 'Quantos centímetros Yosha e Mark têm de diferença?',
   options: [
-    { id: 'a', label: 'Florença na Itália e Florianópolis no Brasil' },
-    { id: 'b', label: 'Roma e Paris' },
-    { id: 'c', label: 'Veneza e São Paulo' },
+    { id: 'a', label: '20 cm' },
+    { id: 'b', label: '30 cm' },
+    { id: 'c', label: '40 cm' },
   ] as const,
-  correctId: 'a' as const,
+  correctId: 'c' as const,
+  flavorText: 'E o nosso amor é gigante e do mesmo tamanho!',
 };
 
 export const room3 = {
   title: 'Salão III — O código',
-  prompt:
-    'Última porta: digite o código simbólico. (Dica dos salões: a inicial dos noivos em ordem alfabética, seguida da letra que começa a cidade da lua de mel — tudo junto, sem espaços.)',
-  hint: 'Y vem antes de M; depois a primeira letra da cidade em Florença.',
-  /** Placeholder: Y + M + F = YMF — ajuste se mudar as pistas acima. */
-  acceptedAnswers: ['ymf'],
+  prompt: 'Última porta: digite o nosso nome de ship (juntos)',
+  acceptedAnswers: ['yoshark'],
+  flavorText: 'Yosha + Mark 😜',
 };
 
 export const finale = {
-  title: 'Você desvendou tudo',
+  title: 'Você agora é um Guardião!',
   paragraphs: [
-    'Obrigado por ter jogado com a gente — e por fazer parte da nossa história mesmo antes do grande dia.',
-    'Convidamos você a ser um Guardião do Casamento: alguém especial que estará ao nosso lado para apoiar, animar e cuidar dos detalhes quando chegar a hora. É um papel de confiança e de carinho.',
-    'Em breve falamos com você com mais detalhes. Até lá, guarda esse segredo com carinho.',
+    'Olá queridos! Estamos muito ansiosos, o dia está chegando!! Decidimos criar o grupo para já começarmos a nos organizar para este fim de semana tão especial.',
+    'Faremos check-in no dia 17 de abril (sexta-feira, que inclusive é aniversário do Noivo) às 14h e check-out no dia 19 de abril (domingo) às 18h. Estamos planejando um cronograma para aproveitarmos ao máximo esses dias, quando o tivermos mandaremos para vocês.',
+    'Vocês são pessoas muito especiais nas nossas vidas. Dos 100 convidados que estarão no dia da festa vocês todos foram escolhidos a dedo para estarem conosco no fim de semana e por esse motivo decidimos chamá-los de ✨GUARDIÕES✨.',
+    'Sim, agora vocês tem um título hahaha. Não teremos os padrinhos tradicionais no nosso casamento, mas teremos os ✨GUARDIÕES✨, que são vocês, pessoas que fazem parte da nossa vida, acompanharam nosso relacionamento de pertinho e torcem por nós, vocês são muito importantes para nossas vidas individuais e juntos.',
+    '✨GUARDIÕES✨, vocês tem a missão na festa de casamento de se divertirem MUITO e pedimos para que vocês possam ser as pessoas que estarão lá para nos ajudar em qualquer imprevisto. Durante nossa vida como casal esperamos continuar tendo vocês por perto sempre com muito amor, respeito e joguinhos, queremos acompanhar os passos de vocês e que vocês acompanhem os nossos.',
+    'Agradecemos por tudo e amamos vocês, nossos ✨GUARDIÕES✨.',
+    'Se você chegou até aqui, você completou a missão, mande uma "✨" no grupo e não diga mais nada hihi.',
   ],
-  signature: 'Com amor, Yosha & Mark',
+  signature: 'Com amor Yosha e Mark.',
 };

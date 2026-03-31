@@ -32,6 +32,37 @@
         .animate-fadeIn {
             animation: fadeIn 1.2s ease-out forwards;
         }
+        .flip-card-perspective {
+            perspective: 1200px;
+        }
+        .flip-card-inner {
+            display: grid;
+            grid-template: 1fr / 1fr;
+            width: 100%;
+            transform-style: preserve-3d;
+            transition: transform 0.85s cubic-bezier(0.4, 0.2, 0.2, 1);
+        }
+        .flip-card-inner.flipped {
+            transform: rotateY(180deg);
+        }
+        .flip-card-inner > .flip-card-face {
+            grid-area: 1 / 1;
+        }
+        .flip-card-face {
+            position: relative;
+            width: 100%;
+            min-width: 0;
+            backface-visibility: hidden;
+            -webkit-backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            justify-content: flex-start;
+        }
+        .flip-card-back {
+            transform: rotateY(180deg);
+            justify-content: space-between;
+        }
     </style>
 <script type="importmap">
 {
