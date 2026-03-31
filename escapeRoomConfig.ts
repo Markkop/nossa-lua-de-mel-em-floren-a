@@ -22,8 +22,10 @@ export const intro = {
 };
 
 export const room1 = {
-  title: 'Salão I — Onde tudo começou',
-  prompt: 'Onde Yosha e Mark se conheceram?',
+  title: 'Salão I — O Chapéu Falante',
+  prompt:
+    'Quando você entra no primeiro salão, vê um chapéu.\nEle diz: "Se você me disser onde a Yosha e o Mark se conheceram, eu deixo você passar."',
+  submitLabel: 'Responder ao chapéu',
   /** Substitua por pistas reais; todas as variantes aceitas. */
   acceptedAnswers: ['udesc', 'didico', 'didicos', 'florianopolis', 'florianópolis', 'floripa'],
   /** Texto após acerto — confirma a resposta. */
@@ -33,7 +35,8 @@ export const room1 = {
 
 export const room2 = {
   title: 'Salão II — Um amor sob medida',
-  prompt: 'Quantos centímetros Yosha e Mark têm de diferença?',
+  prompt:
+    'No segundo salão, você percebe que há dois manequins dos noivos exatamente na mesma altura.\nVocê percebe que pode regular a diferença de altura.\nPara quanto você ajusta?',
   options: [
     { id: 'a', label: '20 cm' },
     { id: 'b', label: '30 cm' },
@@ -45,7 +48,9 @@ export const room2 = {
 
 export const room3 = {
   title: 'Salão III — O código',
-  prompt: 'Última porta: digite o nosso nome de ship (juntos)',
+  prompt:
+    'Após entrar pela terceira e última porta, você avista um boneco de pano bem no meio do salão.\nEle aparenta ser metade noivo e metade noiva.\nAo lado, um baú que só abre com um código.',
+  submitLabel: 'Abrir o baú',
   acceptedAnswers: ['yoshark'],
   flavorText: 'Yosha + Mark 😜',
 };

@@ -15,6 +15,20 @@ import {
 
 const TITLE = 'Um segredo | Yosha e Mark';
 
+const StepIndicator: React.FC<{ step: 1 | 2 | 3; onPrev: () => void }> = ({ step, onPrev }) => (
+  <p className="text-xs uppercase tracking-[0.2em] text-[#3d2b1f]/50 mb-2">
+    <button
+      type="button"
+      onClick={onPrev}
+      className="p-0 m-0 border-0 bg-transparent font-inherit text-inherit tracking-inherit uppercase cursor-default align-baseline"
+      aria-label="Etapa anterior"
+    >
+      {step}
+    </button>
+    {' / 3'}
+  </p>
+);
+
 const ROOM2_OPTION_IDS = room2.options.map((o) => o.id);
 
 /** Texto compartilhado ao “mandar estrelinha” (missão do grupo). */
@@ -204,6 +218,15 @@ const GamePage: React.FC = () => {
     }
   };
 
+  /** Atalho oculto: clique no número da etapa volta uma fase. */
+  const goToPreviousStep = () => {
+    clearError();
+    setSalonFlipped(false);
+    if (phase === 'room1') setPhase('intro');
+    else if (phase === 'room2') setPhase('room1');
+    else if (phase === 'room3') setPhase('room2');
+  };
+
   const cardClass =
     'rounded-2xl border border-[#3d2b1f]/15 bg-white/80 backdrop-blur-sm shadow-[0_8px_40px_rgba(61,43,31,0.08)] px-6 py-8 md:px-10 md:py-10';
 
@@ -239,11 +262,11 @@ const GamePage: React.FC = () => {
           <div className={flipWrapClass} role="region" aria-label="Salão I">
             <div className={`flip-card-inner ${salonFlipped ? 'flipped' : ''}`}>
               <div className={`flip-card-face flip-card-front ${cardClass}`}>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#3d2b1f]/50 mb-2">1 / 3</p>
+                <StepIndicator step={1} onPrev={goToPreviousStep} />
                 <h2 id="room1-heading" className="font-serif text-2xl md:text-3xl text-[#3d2b1f] mb-4">
                   {room1.title}
                 </h2>
-                <p className="text-[#333]/90 mb-6 leading-relaxed">{room1.prompt}</p>
+                <p className="text-[#333]/90 mb-6 leading-relaxed whitespace-pre-line">{room1.prompt}</p>
                 <form onSubmit={tryRoom1} className="space-y-4" aria-labelledby="room1-heading">
                   <label className="sr-only" htmlFor="game-r1">
                     Resposta
@@ -270,7 +293,7 @@ const GamePage: React.FC = () => {
                     type="submit"
                     className="px-6 py-3 rounded-xl bg-[#3d2b1f] text-[#fdfbf7] font-medium hover:bg-[#2a1f16] transition-colors focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/40 focus:ring-offset-2 focus:ring-offset-[#fdfbf7]"
                   >
-                    Abrir a porta
+                    {room1.submitLabel}
                   </button>
                 </form>
               </div>
@@ -298,11 +321,11 @@ const GamePage: React.FC = () => {
           <div className={flipWrapClass} role="region" aria-label="Salão II">
             <div className={`flip-card-inner ${salonFlipped ? 'flipped' : ''}`}>
               <div className={`flip-card-face flip-card-front ${cardClass}`}>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#3d2b1f]/50 mb-2">2 / 3</p>
+                <StepIndicator step={2} onPrev={goToPreviousStep} />
                 <h2 id="room2-heading" className="font-serif text-2xl md:text-3xl text-[#3d2b1f] mb-4">
                   {room2.title}
                 </h2>
-                <p className="text-[#333]/90 mb-6 leading-relaxed">{room2.prompt}</p>
+                <p className="text-[#333]/90 mb-6 leading-relaxed whitespace-pre-line">{room2.prompt}</p>
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
@@ -374,11 +397,11 @@ const GamePage: React.FC = () => {
           <div className={flipWrapClass} role="region" aria-label="Salão III">
             <div className={`flip-card-inner ${salonFlipped ? 'flipped' : ''}`}>
               <div className={`flip-card-face flip-card-front ${cardClass}`}>
-                <p className="text-xs uppercase tracking-[0.2em] text-[#3d2b1f]/50 mb-2">3 / 3</p>
+                <StepIndicator step={3} onPrev={goToPreviousStep} />
                 <h2 id="room3-heading" className="font-serif text-2xl md:text-3xl text-[#3d2b1f] mb-4">
                   {room3.title}
                 </h2>
-                <p className="text-[#333]/90 mb-6 leading-relaxed">{room3.prompt}</p>
+                <p className="text-[#333]/90 mb-6 leading-relaxed whitespace-pre-line">{room3.prompt}</p>
                 <form onSubmit={tryRoom3} className="space-y-4" aria-labelledby="room3-heading">
                   <label className="sr-only" htmlFor="game-r3">
                     Código
@@ -405,7 +428,7 @@ const GamePage: React.FC = () => {
                     type="submit"
                     className="px-6 py-3 rounded-xl bg-[#3d2b1f] text-[#fdfbf7] font-medium hover:bg-[#2a1f16] transition-colors focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/40 focus:ring-offset-2 focus:ring-offset-[#fdfbf7]"
                   >
-                    Desbloquear
+                    {room3.submitLabel}
                   </button>
                 </form>
               </div>
