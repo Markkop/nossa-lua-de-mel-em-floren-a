@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { KeyRound, Lock, Shield, Sparkles } from 'lucide-react';
 
+import WeddingWeekendCalendar from '../components/WeddingWeekendCalendar';
 import {
   finale,
   intro,
@@ -18,8 +20,16 @@ const ROOM2_OPTION_IDS = room2.options.map((o) => o.id);
 /** Texto compartilhado ao “mandar estrelinha” (missão do grupo). */
 const SHARE_ESTRELINHA_TEXT = '✨';
 
+/** Debug: `/missao?step=finale` abre direto na tela final. */
+function isStepFinaleSearch(search: string): boolean {
+  return new URLSearchParams(search).get('step') === 'finale';
+}
+
 const GamePage: React.FC = () => {
-  const [phase, setPhase] = useState<GamePhase>('intro');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [phase, setPhase] = useState<GamePhase>(() =>
+    typeof window !== 'undefined' && isStepFinaleSearch(window.location.search) ? 'finale' : 'intro',
+  );
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState<string | null>(null);
   const [r3, setR3] = useState('');
@@ -71,9 +81,28 @@ const GamePage: React.FC = () => {
     return () => window.clearTimeout(t);
   }, [salonFlipped, phase]);
 
+  /** Sincroniza `?step=finale` (ex.: navegação client-side ou colar URL). */
+  useEffect(() => {
+    if (searchParams.get('step') !== 'finale') return;
+    setPhase('finale');
+    setSalonFlipped(false);
+    setR1('');
+    setR2(null);
+    setR3('');
+    setError(null);
+  }, [searchParams]);
+
   const clearError = () => setError(null);
 
   const resetGame = () => {
+    setSearchParams(
+      (prev) => {
+        const next = new URLSearchParams(prev);
+        next.delete('step');
+        return next;
+      },
+      { replace: true },
+    );
     setPhase('intro');
     setR1('');
     setR2(null);
@@ -394,6 +423,11 @@ const GamePage: React.FC = () => {
               <Shield className="w-10 h-10" strokeWidth={1.25} aria-hidden />
             </div>
             <h2 className="font-serif text-2xl md:text-3xl text-[#3d2b1f] mb-6">{finale.title}</h2>
+            <p className="text-left text-[#333]/90 leading-relaxed mb-6">{finale.opening}</p>
+            <p className="text-left text-[#333]/90 leading-relaxed mb-6">{finale.scheduleIntro}</p>
+            <div className="mb-10">
+              <WeddingWeekendCalendar />
+            </div>
             <div className="text-left space-y-4 text-[#333]/90 leading-relaxed mb-8">
               {finale.paragraphs.map((p, i) => (
                 <p key={i}>{p}</p>

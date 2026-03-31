@@ -52,9 +52,14 @@ export const room3 = {
 
 export const finale = {
   title: 'Você agora é um Guardião!',
-  paragraphs: [
+  /** Abertura da carta (acima do bloco “Faremos check-in…”). */
+  opening:
     'Olá queridos! Estamos muito ansiosos, o dia está chegando!! Decidimos criar o grupo para já começarmos a nos organizar para este fim de semana tão especial.',
+  /** Check-in / calendário — entre a abertura e o calendário; “Vocês são…” vem depois do calendário. */
+  scheduleIntro:
     'Faremos check-in no dia 17 de abril (sexta-feira, que inclusive é aniversário do Noivo) às 14h e check-out no dia 19 de abril (domingo) às 18h. Estamos planejando um cronograma para aproveitarmos ao máximo esses dias, quando o tivermos mandaremos para vocês.',
+  /** Continuação após o calendário. */
+  paragraphs: [
     'Vocês são pessoas muito especiais nas nossas vidas. Dos 100 convidados que estarão no dia da festa vocês todos foram escolhidos a dedo para estarem conosco no fim de semana e por esse motivo decidimos chamá-los de ✨GUARDIÕES✨.',
     'Sim, agora vocês tem um título hahaha. Não teremos os padrinhos tradicionais no nosso casamento, mas teremos os ✨GUARDIÕES✨, que são vocês, pessoas que fazem parte da nossa vida, acompanharam nosso relacionamento de pertinho e torcem por nós, vocês são muito importantes para nossas vidas individuais e juntos.',
     '✨GUARDIÕES✨, vocês tem a missão na festa de casamento de se divertirem MUITO e pedimos para que vocês possam ser as pessoas que estarão lá para nos ajudar em qualquer imprevisto. Durante nossa vida como casal esperamos continuar tendo vocês por perto sempre com muito amor, respeito e joguinhos, queremos acompanhar os passos de vocês e que vocês acompanhem os nossos.',
