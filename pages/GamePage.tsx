@@ -595,7 +595,7 @@ const GamePage: React.FC = () => {
                         maxLength={1}
                         enterKeyHint={index === ROOM3_PASSWORD_LENGTH - 1 ? 'go' : 'next'}
                         aria-label={`Letra ${index + 1} da senha`}
-                        className="h-12 w-12 rounded-xl border border-[#3d2b1f]/20 bg-[#fdfbf7] text-center text-lg font-semibold uppercase shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30"
+                        className="h-11 w-11 rounded-md border border-[#3d2b1f]/20 bg-[#fdfbf7] text-center text-sm font-semibold uppercase shadow-sm focus:outline-none focus:ring-2 focus:ring-[#3d2b1f]/30"
                       />
                     ))}
                   </div>
