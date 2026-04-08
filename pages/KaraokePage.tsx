@@ -37,6 +37,10 @@ const normalizeSearchText = (value: string) =>
     .normalize('NFD')
     .replace(/[\u0300-\u036f]/g, '')
     .toLowerCase();
+const normalizeImportedField = (value: string) => {
+  const normalized = normalizeText(value);
+  return normalized === '<empty>' || normalized === '-' ? '' : normalized;
+};
 const makeKey = (name: string, song: string) => `${normalizeText(name)}::${normalizeText(song)}`;
 
 const GUEST_ADDED_TO_QUEUE_MSG = 'Adicionado à fila!';
@@ -386,6 +390,7 @@ const KaraokePage: React.FC = () => {
   };
 
   const guestKeys = useMemo(() => new Set(guestSongs.map((entry) => makeKey(entry.name, entry.song))), [guestSongs]);
+  const visibleGuestSongs = useMemo(() => guestSongs.filter((entry) => normalizeText(entry.song) !== ''), [guestSongs]);
   const otherSongKeys = useMemo(
     () => new Set(otherSongs.map((entry) => normalizeText(entry.song).toLowerCase())),
     [otherSongs]
@@ -412,12 +417,14 @@ const KaraokePage: React.FC = () => {
       name,
       kind: 'name',
     }));
-    const nameWithSong: NameSuggestion[] = matches.map((entry) => ({
-      id: `pair-${entry.id}`,
-      name: entry.name,
-      song: entry.song,
-      kind: 'pair',
-    }));
+    const nameWithSong: NameSuggestion[] = matches
+      .filter((entry) => normalizeText(entry.song) !== '')
+      .map((entry) => ({
+        id: `pair-${entry.id}`,
+        name: entry.name,
+        song: entry.song,
+        kind: 'pair',
+      }));
     return [...nameOnly, ...nameWithSong];
   }, [guestSongs, queueName]);
 
@@ -427,6 +434,7 @@ const KaraokePage: React.FC = () => {
     const seen = new Set<string>();
     const suggestions: SongSuggestion[] = [];
     guestSongs.forEach((entry) => {
+      if (normalizeText(entry.song) === '') return;
       if (!entry.song.toLowerCase().includes(query)) return;
       const key = normalizeText(entry.song).toLowerCase();
       if (seen.has(key)) return;
@@ -857,14 +865,13 @@ const KaraokePage: React.FC = () => {
     lines.forEach((line, index) => {
       const [rawName, ...rest] = line.split(':');
       const rawSong = rest.join(':');
-      const name = normalizeText(rawName || '');
-      const song = normalizeText(rawSong || '');
+      const name = normalizeImportedField(rawName || '');
+      const song = normalizeImportedField(rawSong || '');
       if (!rawName || rest.length === 0) {
         errors.push(`Linha ${index + 1}: use o formato "Convidado: Música".`);
         return;
       }
-      if (!name || !song) {
-        errors.push(`Linha ${index + 1}: convidado e música são obrigatórios.`);
+      if (!name) {
         return;
       }
       const key = makeKey(name, song);
@@ -1149,14 +1156,14 @@ const KaraokePage: React.FC = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {guestSongs.length === 0 ? (
+                        {visibleGuestSongs.length === 0 ? (
                           <tr>
                             <td colSpan={3} className="py-8 px-4 text-center text-gray-500 text-sm">
                               Nenhuma música adicionada ainda. Clique no + para começar.
                             </td>
                           </tr>
                         ) : (
-                          guestSongs.map((entry) => {
+                          visibleGuestSongs.map((entry) => {
                             const queueKey = makeKey(entry.name, entry.song);
                             const queueEntryIdForGuest = queueKeyToId.get(queueKey);
                             const queueIndex = queueEntryIdForGuest
@@ -1641,8 +1648,8 @@ const KaraokePage: React.FC = () => {
                   {bulkAddedCount !== null && (
                     <div className="text-sm text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-lg px-4 py-3">
                       {bulkAddedCount === 0
-                        ? 'Nenhuma nova música adicionada.'
-                        : `${bulkAddedCount} música${bulkAddedCount === 1 ? '' : 's'} adicionada${bulkAddedCount === 1 ? '' : 's'} com sucesso.`}
+                        ? 'Nenhuma nova linha salva.'
+                        : `${bulkAddedCount} linha${bulkAddedCount === 1 ? '' : 's'} salva${bulkAddedCount === 1 ? '' : 's'} com sucesso.`}
                     </div>
                   )}
                   {bulkErrors.length > 0 && (

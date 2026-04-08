@@ -107,8 +107,8 @@ export async function buildApp() {
       for (let i = 0; i < entries.length; i++) {
         const name = normalizeText(entries[i]?.name ?? '');
         const song = normalizeText(entries[i]?.song ?? '');
-        if (!name || !song) {
-          errors.push(`Linha ${i + 1}: convidado e música são obrigatórios.`);
+        if (!name) {
+          errors.push(`Linha ${i + 1}: convidado é obrigatório.`);
           continue;
         }
         if (await db.guestHasDuplicate(name, song)) {
