@@ -405,27 +405,33 @@ const KaraokePage: React.FC = () => {
     const query = normalizeSearchText(queueName);
     if (!query) return [];
     const matches = guestSongs.filter((entry) => normalizeSearchText(entry.name).includes(query));
-    const uniqueNames = new Map<string, string>();
+    const grouped = new Map<string, { name: string; songs: NameSuggestion[] }>();
+
     matches.forEach((entry) => {
       const key = normalizeSearchText(entry.name);
-      if (!uniqueNames.has(key)) {
-        uniqueNames.set(key, entry.name);
+      const current = grouped.get(key);
+      if (!current) {
+        grouped.set(key, { name: entry.name, songs: [] });
+      }
+
+      if (normalizeText(entry.song) !== '') {
+        grouped.get(key)?.songs.push({
+          id: `pair-${entry.id}`,
+          name: entry.name,
+          song: entry.song,
+          kind: 'pair',
+        });
       }
     });
-    const nameOnly: NameSuggestion[] = Array.from(uniqueNames.values()).map((name) => ({
-      id: `name-${name.toLowerCase()}`,
-      name,
-      kind: 'name',
-    }));
-    const nameWithSong: NameSuggestion[] = matches
-      .filter((entry) => normalizeText(entry.song) !== '')
-      .map((entry) => ({
-        id: `pair-${entry.id}`,
-        name: entry.name,
-        song: entry.song,
-        kind: 'pair',
-      }));
-    return [...nameOnly, ...nameWithSong];
+
+    return Array.from(grouped.values()).flatMap(({ name, songs }) => [
+      {
+        id: `name-${normalizeSearchText(name)}`,
+        name,
+        kind: 'name' as const,
+      },
+      ...songs,
+    ]);
   }, [guestSongs, queueName]);
 
   const songSuggestions = useMemo<SongSuggestion[]>(() => {
