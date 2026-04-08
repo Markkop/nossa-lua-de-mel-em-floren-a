@@ -7,6 +7,7 @@ import PresentesPage from './pages/PresentesPage';
 import HospedagemPage from './pages/HospedagemPage';
 import KaraokePage from './pages/KaraokePage';
 import GamePage from './pages/GamePage';
+import PixRecipientPage from './pages/PixRecipientPage';
 
 /**
  * Detects which subdomain we're on to render the appropriate page.
@@ -44,6 +45,8 @@ const SubdomainRouter: React.FC = () => {
       <Route path="/karaoke" element={<KaraokePage />} />
       <Route path="/missao" element={<GamePage />} />
       <Route path="/game" element={<Navigate to="/missao" replace />} />
+      <Route path="/pix-mark" element={<PixRecipientPage recipient="mark" />} />
+      <Route path="/pix-yosha" element={<PixRecipientPage recipient="yosha" />} />
     </Routes>
   );
 };

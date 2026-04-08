@@ -32,6 +32,11 @@ type SongSuggestion = {
 };
 
 const normalizeText = (value: string) => value.trim().replace(/\s+/g, ' ');
+const normalizeSearchText = (value: string) =>
+  normalizeText(value)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
 const makeKey = (name: string, song: string) => `${normalizeText(name)}::${normalizeText(song)}`;
 
 const GUEST_ADDED_TO_QUEUE_MSG = 'Adicionado à fila!';
@@ -392,12 +397,12 @@ const KaraokePage: React.FC = () => {
     return m;
   }, [queue]);
   const nameSuggestions = useMemo<NameSuggestion[]>(() => {
-    const query = normalizeText(queueName).toLowerCase();
+    const query = normalizeSearchText(queueName);
     if (!query) return [];
-    const matches = guestSongs.filter((entry) => entry.name.toLowerCase().includes(query));
+    const matches = guestSongs.filter((entry) => normalizeSearchText(entry.name).includes(query));
     const uniqueNames = new Map<string, string>();
     matches.forEach((entry) => {
-      const key = normalizeText(entry.name).toLowerCase();
+      const key = normalizeSearchText(entry.name);
       if (!uniqueNames.has(key)) {
         uniqueNames.set(key, entry.name);
       }
@@ -648,14 +653,11 @@ const KaraokePage: React.FC = () => {
     if (suggestion.song) {
       setQueueName(suggestion.name);
       setQueueSong(suggestion.song);
-      void addQueueEntry(suggestion.name, suggestion.song).then((added) => {
-        if (added) {
-          setIsNameFocused(false);
-          setIsSongFocused(false);
-          setNameHighlightIndex(-1);
-          setSongHighlightIndex(-1);
-        }
-      });
+      setQueueError('');
+      setIsNameFocused(false);
+      setIsSongFocused(false);
+      setNameHighlightIndex(-1);
+      setSongHighlightIndex(-1);
     }
   };
 
