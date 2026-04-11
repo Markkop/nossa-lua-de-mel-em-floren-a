@@ -45,6 +45,29 @@ function normalizeText(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
 }
 
+function splitSongArtist(song: string): { song: string; artist: string } {
+  for (const separator of [' - ', ' – ']) {
+    const index = song.lastIndexOf(separator);
+    if (index === -1) continue;
+
+    const title = normalizeText(song.slice(0, index));
+    const artist = normalizeText(song.slice(index + separator.length));
+    if (title && artist) {
+      return { song: title, artist };
+    }
+  }
+
+  return { song, artist: '' };
+}
+
+function normalizeSongPayload(songValue: string, artistValue?: string) {
+  const song = normalizeText(songValue);
+  const artist = normalizeText(artistValue ?? '');
+  if (!song) return { song: '', artist: '' };
+  if (artist) return { song, artist };
+  return splitSongArtist(song);
+}
+
 export async function buildApp() {
   const fastify = Fastify({ logger: true, trustProxy: true });
 
@@ -68,34 +91,42 @@ export async function buildApp() {
     return { token };
   });
 
-  fastify.post<{ Body: { name?: string; song?: string } }>('/api/karaoke/queue', async (request, reply) => {
-    const name = (request.body?.name ?? '').trim().replace(/\s+/g, ' ');
-    const song = (request.body?.song ?? '').trim().replace(/\s+/g, ' ');
-    if (!name || !song) {
-      return reply.code(400).send({ error: 'Nome e música são obrigatórios' });
+  fastify.post<{ Body: { name?: string; song?: string; artist?: string; youtubeUrl?: string } }>(
+    '/api/karaoke/queue',
+    async (request, reply) => {
+      const name = normalizeText(request.body?.name ?? '');
+      const { song, artist } = normalizeSongPayload(request.body?.song ?? '', request.body?.artist);
+      const youtubeUrl = normalizeText(request.body?.youtubeUrl ?? '');
+      if (!name || !song) {
+        return reply.code(400).send({ error: 'Nome e música são obrigatórios' });
+      }
+      if (await db.queueHasDuplicate(name, song)) {
+        return reply.code(409).send({ error: 'Essa inscrição já está na fila' });
+      }
+      await db.addQueueEntry(name, song, artist, youtubeUrl);
+      return { ok: true };
     }
-    if (await db.queueHasDuplicate(name, song)) {
-      return reply.code(409).send({ error: 'Essa inscrição já está na fila' });
-    }
-    await db.addQueueEntry(name, song);
-    return { ok: true };
-  });
+  );
 
-  fastify.post<{ Body: { name?: string; song?: string } }>('/api/karaoke/guest-songs', async (request, reply) => {
-    const name = normalizeText(request.body?.name ?? '');
-    const song = normalizeText(request.body?.song ?? '');
-    if (!name || !song) {
-      return reply.code(400).send({ error: 'Convidado e música são obrigatórios' });
+  fastify.post<{ Body: { name?: string; song?: string; artist?: string; youtubeUrl?: string } }>(
+    '/api/karaoke/guest-songs',
+    async (request, reply) => {
+      const name = normalizeText(request.body?.name ?? '');
+      const { song, artist } = normalizeSongPayload(request.body?.song ?? '', request.body?.artist);
+      const youtubeUrl = normalizeText(request.body?.youtubeUrl ?? '');
+      if (!name || !song) {
+        return reply.code(400).send({ error: 'Convidado e música são obrigatórios' });
+      }
+      if (await db.guestHasDuplicate(name, song)) {
+        return reply.code(409).send({ error: 'Essa combinação já foi adicionada' });
+      }
+      await db.addGuestSong(name, song, artist, youtubeUrl);
+      return { ok: true };
     }
-    if (await db.guestHasDuplicate(name, song)) {
-      return reply.code(409).send({ error: 'Essa combinação já foi adicionada' });
-    }
-    await db.addGuestSong(name, song);
-    return { ok: true };
-  });
+  );
 
   /** Single path segment (no `/bulk`) — Vercel file routing + catch-all can 404 on multi-segment paths. */
-  fastify.post<{ Body: { entries?: { name: string; song: string }[] } }>(
+  fastify.post<{ Body: { entries?: { name: string; song: string; artist?: string; youtubeUrl?: string }[] } }>(
     '/api/karaoke/guest-songs-bulk',
     async (request, reply) => {
       const entries = request.body?.entries;
@@ -106,7 +137,8 @@ export async function buildApp() {
       let added = 0;
       for (let i = 0; i < entries.length; i++) {
         const name = normalizeText(entries[i]?.name ?? '');
-        const song = normalizeText(entries[i]?.song ?? '');
+        const { song, artist } = normalizeSongPayload(entries[i]?.song ?? '', entries[i]?.artist);
+        const youtubeUrl = normalizeText(entries[i]?.youtubeUrl ?? '');
         if (!name) {
           errors.push(`Linha ${i + 1}: convidado é obrigatório.`);
           continue;
@@ -115,47 +147,55 @@ export async function buildApp() {
           errors.push(`Linha ${i + 1}: já existe (duplicada).`);
           continue;
         }
-        await db.addGuestSong(name, song);
+        await db.addGuestSong(name, song, artist, youtubeUrl);
         added++;
       }
       return { added, errors };
     }
   );
 
-  fastify.post<{ Body: { song?: string } }>('/api/karaoke/other-songs', async (request, reply) => {
-    const song = normalizeText(request.body?.song ?? '');
-    if (!song) {
-      return reply.code(400).send({ error: 'Música é obrigatória' });
-    }
-    if (await db.otherHasDuplicate(song)) {
-      return reply.code(409).send({ error: 'Essa música já foi adicionada' });
-    }
-    await db.addOtherSong(song);
-    return { ok: true };
-  });
-
-  fastify.post<{ Body: { songs?: string[] } }>('/api/karaoke/other-songs-bulk', async (request, reply) => {
-    const songs = request.body?.songs;
-    if (!Array.isArray(songs) || songs.length === 0) {
-      return reply.code(400).send({ error: 'songs obrigatório' });
-    }
-    const errors: string[] = [];
-    let added = 0;
-    for (let i = 0; i < songs.length; i++) {
-      const song = normalizeText(songs[i] ?? '');
+  fastify.post<{ Body: { song?: string; artist?: string; youtubeUrl?: string } }>(
+    '/api/karaoke/other-songs',
+    async (request, reply) => {
+      const { song, artist } = normalizeSongPayload(request.body?.song ?? '', request.body?.artist);
+      const youtubeUrl = normalizeText(request.body?.youtubeUrl ?? '');
       if (!song) {
-        errors.push(`Linha ${i + 1}: música inválida.`);
-        continue;
+        return reply.code(400).send({ error: 'Música é obrigatória' });
       }
       if (await db.otherHasDuplicate(song)) {
-        errors.push(`Linha ${i + 1}: já existe (duplicada).`);
-        continue;
+        return reply.code(409).send({ error: 'Essa música já foi adicionada' });
       }
-      await db.addOtherSong(song);
-      added++;
+      await db.addOtherSong(song, artist, youtubeUrl);
+      return { ok: true };
     }
-    return { added, errors };
-  });
+  );
+
+  fastify.post<{ Body: { entries?: { song: string; artist?: string; youtubeUrl?: string }[] } }>(
+    '/api/karaoke/other-songs-bulk',
+    async (request, reply) => {
+      const entries = request.body?.entries;
+      if (!Array.isArray(entries) || entries.length === 0) {
+        return reply.code(400).send({ error: 'entries obrigatório' });
+      }
+      const errors: string[] = [];
+      let added = 0;
+      for (let i = 0; i < entries.length; i++) {
+        const { song, artist } = normalizeSongPayload(entries[i]?.song ?? '', entries[i]?.artist);
+        const youtubeUrl = normalizeText(entries[i]?.youtubeUrl ?? '');
+        if (!song) {
+          errors.push(`Linha ${i + 1}: música inválida.`);
+          continue;
+        }
+        if (await db.otherHasDuplicate(song)) {
+          errors.push(`Linha ${i + 1}: já existe (duplicada).`);
+          continue;
+        }
+        await db.addOtherSong(song, artist, youtubeUrl);
+        added++;
+      }
+      return { added, errors };
+    }
+  );
 
   fastify.post<{ Body: { ids?: string[] } }>(
     '/api/karaoke/queue-reorder',
@@ -222,6 +262,14 @@ export async function buildApp() {
       return reply.code(401).send({ error: 'Acesso de DJ necessário' });
     }
     const removed = await db.deleteAllGuestSongs();
+    return { ok: true, removed };
+  });
+
+  fastify.post('/api/karaoke/other-songs-clear', async (request, reply) => {
+    if (!(await requireDj(request.headers.authorization))) {
+      return reply.code(401).send({ error: 'Acesso de DJ necessário' });
+    }
+    const removed = await db.deleteAllOtherSongs();
     return { ok: true, removed };
   });
 

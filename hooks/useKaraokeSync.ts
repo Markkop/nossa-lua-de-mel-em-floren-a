@@ -3,6 +3,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type { KaraokeEntry, KaraokeState, OtherSong } from '@/utils/karaoke-api';
 import {
   deleteAllGuestSongs,
+  deleteAllOtherSongs,
   deleteGuestSong,
   deleteOtherSong,
   deleteQueueEntry,
@@ -105,21 +106,21 @@ export function useKaraokeSync() {
     [setDjToken]
   );
 
-  const addQueueEntry = useCallback(async (name: string, song: string) => {
-    await postQueue(name, song);
+  const addQueueEntry = useCallback(async (name: string, song: string, artist = '', youtubeUrl = '') => {
+    await postQueue(name, song, artist, youtubeUrl);
     const state = await fetchKaraokeState();
     applyState(state);
     setLoadError(null);
     return state;
   }, [applyState]);
 
-  const addGuestSong = useCallback(async (name: string, song: string) => {
-    await postGuestSong(name, song);
+  const addGuestSong = useCallback(async (name: string, song: string, artist = '', youtubeUrl = '') => {
+    await postGuestSong(name, song, artist, youtubeUrl);
     await refreshState();
   }, [refreshState]);
 
   const addGuestBulk = useCallback(
-    async (entries: { name: string; song: string }[]) => {
+    async (entries: { name: string; song: string; artist?: string; youtubeUrl?: string }[]) => {
       const result = await postGuestSongsBulk(entries);
       await refreshState();
       return result;
@@ -127,14 +128,14 @@ export function useKaraokeSync() {
     [refreshState]
   );
 
-  const addOtherSong = useCallback(async (song: string) => {
-    await postOtherSong(song);
+  const addOtherSong = useCallback(async (song: string, artist = '', youtubeUrl = '') => {
+    await postOtherSong(song, artist, youtubeUrl);
     await refreshState();
   }, [refreshState]);
 
   const addOtherBulk = useCallback(
-    async (songs: string[]) => {
-      const result = await postOtherSongsBulk(songs);
+    async (entries: { song: string; artist?: string; youtubeUrl?: string }[]) => {
+      const result = await postOtherSongsBulk(entries);
       await refreshState();
       return result;
     },
@@ -192,6 +193,12 @@ export function useKaraokeSync() {
     await refreshState();
   }, [djToken, refreshState]);
 
+  const removeAllOtherSongs = useCallback(async () => {
+    if (!djToken) throw new Error('Modo DJ necessário');
+    await deleteAllOtherSongs(djToken);
+    await refreshState();
+  }, [djToken, refreshState]);
+
   const removeOther = useCallback(
     async (id: string) => {
       if (!djToken) throw new Error('Modo DJ necessário');
@@ -224,6 +231,7 @@ export function useKaraokeSync() {
     removeQueue,
     removeGuest,
     removeAllGuestSongs,
+    removeAllOtherSongs,
     removeOther,
     refreshState,
     refreshKaraoke,

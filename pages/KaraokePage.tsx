@@ -3,7 +3,7 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine';
 import { draggable, dropTargetForElements, monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter';
 import { reorder } from '@atlaskit/pragmatic-drag-and-drop/reorder';
 
-import { GripVertical, ListEnd, Lock, LockOpen, Menu, Music, SkipForward } from 'lucide-react';
+import { GripVertical, ListEnd, Lock, LockOpen, Menu, Music, SkipForward, Youtube } from 'lucide-react';
 
 import { useKaraokeSync } from '@/hooks/useKaraokeSync';
 
@@ -11,23 +11,29 @@ type KaraokeEntry = {
   id: string;
   name: string;
   song: string;
+  artist: string;
+  youtubeUrl: string;
 };
 
 type OtherSong = {
   id: string;
   song: string;
+  artist: string;
+  youtubeUrl: string;
 };
 
 type NameSuggestion = {
   id: string;
   name: string;
   song?: string;
+  artist?: string;
   kind: 'name' | 'pair';
 };
 
 type SongSuggestion = {
   id: string;
   song: string;
+  artist?: string;
   fromGuest: boolean;
 };
 
@@ -42,6 +48,37 @@ const normalizeImportedField = (value: string) => {
   return normalized === '<empty>' || normalized === '-' ? '' : normalized;
 };
 const makeKey = (name: string, song: string) => `${normalizeText(name)}::${normalizeText(song)}`;
+const formatSong = (song: string, artist: string) => (artist ? `${song} \u2013 ${artist}` : song);
+
+const splitSongArtist = (value: string): { song: string; artist: string } => {
+  const song = normalizeText(value);
+  if (!song) return { song: '', artist: '' };
+
+  for (const separator of [' - ', ' – ']) {
+    const index = song.lastIndexOf(separator);
+    if (index === -1) continue;
+
+    const title = normalizeText(song.slice(0, index));
+    const artist = normalizeText(song.slice(index + separator.length));
+    if (title && artist) return { song: title, artist };
+  }
+
+  return { song, artist: '' };
+};
+
+const splitSongArtistFromParentheses = (value: string): { song: string; artist: string } => {
+  const song = normalizeText(value);
+  const match = song.match(/^(.*)\(([^()]+)\)$/);
+  if (!match) return { song, artist: '' };
+
+  const title = normalizeText(match[1] ?? '');
+  const artist = normalizeText(match[2] ?? '');
+  if (!title || !artist) return { song, artist: '' };
+  return { song: title, artist };
+};
+
+const makeSongArtistKey = (song: string, artist: string) =>
+  `${normalizeSearchText(song)}::${normalizeSearchText(artist)}`;
 
 const GUEST_ADDED_TO_QUEUE_MSG = 'Adicionado à fila!';
 const GUEST_REMOVED_FROM_QUEUE_MSG = 'Removido da fila!';
@@ -178,9 +215,23 @@ const QueueRow: React.FC<QueueRowProps> = ({
           {statusLabel}
         </span>
         <span className="block">{item.name}</span>
-        <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">{item.song}</span>
+        <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">
+          {formatSong(item.song, item.artist)}
+        </span>
         {isDj ? (
           <div className="md:hidden mt-3 pt-3 border-t border-[#8b5e3c]/10 flex flex-nowrap items-center gap-2">
+            {item.youtubeUrl ? (
+              <a
+                href={item.youtubeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Abrir no YouTube"
+                title="Abrir no YouTube"
+                className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/25 text-[#c23b2a] hover:bg-[#8b5e3c]/10 transition-colors"
+              >
+                <Youtube className="h-4 w-4" aria-hidden />
+              </a>
+            ) : null}
             <button
               type="button"
               disabled={queueActionBusy}
@@ -239,10 +290,22 @@ const QueueRow: React.FC<QueueRowProps> = ({
           </div>
         ) : null}
       </td>
-      <td className="hidden md:table-cell py-3 px-4 align-middle text-gray-600">{item.song}</td>
+      <td className="hidden md:table-cell py-3 px-4 align-middle text-gray-600">{formatSong(item.song, item.artist)}</td>
       {isDj ? (
         <td className="hidden md:table-cell py-3 px-4 align-middle">
           <div className="flex flex-nowrap items-center justify-end gap-2">
+            {item.youtubeUrl ? (
+              <a
+                href={item.youtubeUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Abrir no YouTube"
+                title="Abrir no YouTube"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#8b5e3c]/25 p-0 text-[#c23b2a] hover:bg-[#8b5e3c]/10 transition-colors"
+              >
+                <Youtube className="h-4 w-4 shrink-0" aria-hidden strokeWidth={1.75} />
+              </a>
+            ) : null}
             <button
               type="button"
               disabled={queueActionBusy}
@@ -326,6 +389,7 @@ const KaraokePage: React.FC = () => {
     removeQueue: apiRemoveQueue,
     removeGuest: apiRemoveGuest,
     removeAllGuestSongs: apiRemoveAllGuestSongs,
+    removeAllOtherSongs: apiRemoveAllOtherSongs,
     removeOther: apiRemoveOther,
     refreshKaraoke,
   } = useKaraokeSync();
@@ -342,6 +406,7 @@ const KaraokePage: React.FC = () => {
   const queueJoinBannerTimer = useRef<number | null>(null);
   const [isGuestModalOpen, setIsGuestModalOpen] = useState(false);
   const [isRemoveAllGuestConfirmOpen, setIsRemoveAllGuestConfirmOpen] = useState(false);
+  const [isRemoveAllOtherConfirmOpen, setIsRemoveAllOtherConfirmOpen] = useState(false);
   const [guestQueueRemoveConfirm, setGuestQueueRemoveConfirm] = useState<{
     entry: KaraokeEntry;
     queueId: string;
@@ -350,11 +415,15 @@ const KaraokePage: React.FC = () => {
   const [isOtherModalOpen, setIsOtherModalOpen] = useState(false);
   const [singleGuestName, setSingleGuestName] = useState('');
   const [singleGuestSong, setSingleGuestSong] = useState('');
+  const [singleGuestArtist, setSingleGuestArtist] = useState('');
+  const [singleGuestYoutube, setSingleGuestYoutube] = useState('');
   const [singleGuestError, setSingleGuestError] = useState('');
   const [bulkText, setBulkText] = useState('');
   const [bulkErrors, setBulkErrors] = useState<string[]>([]);
   const [bulkAddedCount, setBulkAddedCount] = useState<number | null>(null);
   const [singleOtherSong, setSingleOtherSong] = useState('');
+  const [singleOtherArtist, setSingleOtherArtist] = useState('');
+  const [singleOtherYoutube, setSingleOtherYoutube] = useState('');
   const [singleOtherError, setSingleOtherError] = useState('');
   const [otherBulkText, setOtherBulkText] = useState('');
   const [otherBulkErrors, setOtherBulkErrors] = useState<string[]>([]);
@@ -401,6 +470,66 @@ const KaraokePage: React.FC = () => {
     queue.forEach((q) => m.set(makeKey(q.name, q.song), q.id));
     return m;
   }, [queue]);
+  const guestYoutubeBySongArtist = useMemo(() => {
+    const m = new Map<string, string>();
+
+    guestSongs.forEach((entry) => {
+      if (!entry.youtubeUrl) return;
+      m.set(makeSongArtistKey(entry.song, entry.artist), entry.youtubeUrl);
+    });
+
+    return m;
+  }, [guestSongs]);
+  const guestYoutubeBySong = useMemo(() => {
+    const counts = new Map<string, number>();
+    const urls = new Map<string, string>();
+
+    guestSongs.forEach((entry) => {
+      if (!entry.youtubeUrl) return;
+      const key = normalizeSearchText(entry.song);
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+      urls.set(key, entry.youtubeUrl);
+    });
+
+    const unique = new Map<string, string>();
+    counts.forEach((count, key) => {
+      if (count === 1) {
+        const url = urls.get(key);
+        if (url) unique.set(key, url);
+      }
+    });
+
+    return unique;
+  }, [guestSongs]);
+  const showOtherActions = isDj || otherSongs.some((entry) => Boolean(entry.youtubeUrl));
+  const queueWithYoutube = useMemo(() => {
+    const resolveYoutubeUrl = (entry: KaraokeEntry) => {
+      if (entry.youtubeUrl) return entry.youtubeUrl;
+
+      const candidates = [
+        { song: entry.song, artist: entry.artist },
+        splitSongArtist(entry.song),
+        splitSongArtistFromParentheses(entry.song),
+      ].filter((candidate) => candidate.song);
+
+      for (const candidate of candidates) {
+        const exact = guestYoutubeBySongArtist.get(makeSongArtistKey(candidate.song, candidate.artist));
+        if (exact) return exact;
+      }
+
+      for (const candidate of candidates) {
+        const songOnly = guestYoutubeBySong.get(normalizeSearchText(candidate.song));
+        if (songOnly) return songOnly;
+      }
+
+      return '';
+    };
+
+    return queue.map((entry) => ({
+      ...entry,
+      youtubeUrl: resolveYoutubeUrl(entry),
+    }));
+  }, [guestSongs, guestYoutubeBySong, guestYoutubeBySongArtist, queue]);
   const nameSuggestions = useMemo<NameSuggestion[]>(() => {
     const query = normalizeSearchText(queueName);
     if (!query) return [];
@@ -419,6 +548,7 @@ const KaraokePage: React.FC = () => {
           id: `pair-${entry.id}`,
           name: entry.name,
           song: entry.song,
+          artist: entry.artist,
           kind: 'pair',
         });
       }
@@ -445,14 +575,14 @@ const KaraokePage: React.FC = () => {
       const key = normalizeText(entry.song).toLowerCase();
       if (seen.has(key)) return;
       seen.add(key);
-      suggestions.push({ id: `guest-${entry.id}`, song: entry.song, fromGuest: true });
+      suggestions.push({ id: `guest-${entry.id}`, song: entry.song, artist: entry.artist, fromGuest: true });
     });
     otherSongs.forEach((entry) => {
       if (!entry.song.toLowerCase().includes(query)) return;
       const key = normalizeText(entry.song).toLowerCase();
       if (seen.has(key)) return;
       seen.add(key);
-      suggestions.push({ id: `other-${entry.id}`, song: entry.song, fromGuest: false });
+      suggestions.push({ id: `other-${entry.id}`, song: entry.song, artist: entry.artist, fromGuest: false });
     });
     return suggestions;
   }, [guestSongs, otherSongs, queueSong]);
@@ -535,13 +665,9 @@ const KaraokePage: React.FC = () => {
     });
   }, [isDj, pendingAction, apiReorderQueue]);
 
-  const addQueueEntry = async (
-    rawName: string,
-    rawSong: string,
-    options: { clearInputs?: boolean; showErrors?: boolean } = {}
-  ) => {
+  const addQueueEntry = async (rawName: string, rawSong: string, options: { clearInputs?: boolean; showErrors?: boolean } = {}) => {
     const name = normalizeText(rawName);
-    const song = normalizeText(rawSong);
+    const { song, artist } = splitSongArtist(rawSong);
     const showErrors = options.showErrors !== false;
     if (!name || !song) {
       if (showErrors) setQueueError('Preencha nome e música para entrar na fila.');
@@ -554,7 +680,7 @@ const KaraokePage: React.FC = () => {
     }
     setPendingAction('queue');
     try {
-      const state = await apiAddQueue(name, song);
+      const state = await apiAddQueue(name, song, artist);
       const idx = state.queue.findIndex((e) => makeKey(e.name, e.song) === key);
       if (idx >= 0) showQueueJoinBanner(idx + 1);
       if (options.clearInputs !== false) {
@@ -580,7 +706,7 @@ const KaraokePage: React.FC = () => {
     const actionKey = `guest-fila-${entry.id}`;
     setPendingAction(actionKey);
     try {
-      const state = await apiAddQueue(entry.name, entry.song);
+      const state = await apiAddQueue(entry.name, entry.song, entry.artist, entry.youtubeUrl);
       const key = makeKey(entry.name, entry.song);
       const idx = state.queue.findIndex((e) => makeKey(e.name, e.song) === key);
       pushGuestMessage(
@@ -666,7 +792,7 @@ const KaraokePage: React.FC = () => {
     }
     if (suggestion.song) {
       setQueueName(suggestion.name);
-      setQueueSong(suggestion.song);
+      setQueueSong(formatSong(suggestion.song, suggestion.artist ?? ''));
       setQueueError('');
       setIsNameFocused(false);
       setIsSongFocused(false);
@@ -676,7 +802,7 @@ const KaraokePage: React.FC = () => {
   };
 
   const handleSelectSongSuggestion = (suggestion: SongSuggestion) => {
-    setQueueSong(suggestion.song);
+    setQueueSong(formatSong(suggestion.song, suggestion.artist ?? ''));
     setQueueError('');
     setIsSongFocused(false);
     setSongHighlightIndex(-1);
@@ -723,6 +849,8 @@ const KaraokePage: React.FC = () => {
   const handleAddGuestSingle = async () => {
     const name = normalizeText(singleGuestName);
     const song = normalizeText(singleGuestSong);
+    const artist = normalizeText(singleGuestArtist);
+    const youtubeUrl = normalizeText(singleGuestYoutube);
     if (!name || !song) {
       setSingleGuestError('Preencha convidado e música para adicionar.');
       return;
@@ -734,9 +862,11 @@ const KaraokePage: React.FC = () => {
     }
     setPendingAction('guest-single');
     try {
-      await apiAddGuest(name, song);
+      await apiAddGuest(name, song, artist, youtubeUrl);
       setSingleGuestName('');
       setSingleGuestSong('');
+      setSingleGuestArtist('');
+      setSingleGuestYoutube('');
       setSingleGuestError('');
     } catch (e) {
       setSingleGuestError(e instanceof Error ? e.message : 'Erro ao adicionar.');
@@ -747,6 +877,8 @@ const KaraokePage: React.FC = () => {
 
   const handleAddOtherSingle = async () => {
     const song = normalizeText(singleOtherSong);
+    const artist = normalizeText(singleOtherArtist);
+    const youtubeUrl = normalizeText(singleOtherYoutube);
     if (!song) {
       setSingleOtherError('Preencha a música para adicionar.');
       return;
@@ -758,8 +890,10 @@ const KaraokePage: React.FC = () => {
     }
     setPendingAction('other-single');
     try {
-      await apiAddOther(song);
+      await apiAddOther(song, artist, youtubeUrl);
       setSingleOtherSong('');
+      setSingleOtherArtist('');
+      setSingleOtherYoutube('');
       setSingleOtherError('');
     } catch (e) {
       setSingleOtherError(e instanceof Error ? e.message : 'Erro ao adicionar.');
@@ -769,13 +903,42 @@ const KaraokePage: React.FC = () => {
   };
 
   const handleAddOtherBulk = async () => {
-    const lines = otherBulkText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const lines = otherBulkText.split(/\r?\n/).filter((line) => line.trim());
     const errors: string[] = [];
-    const songsToAdd: string[] = [];
+    const entriesToAdd: { song: string; artist: string; youtubeUrl: string }[] = [];
     const nextKeys = new Set(otherSongKeys);
+    const firstNonEmptyLine = lines.find((line) => line.trim());
+    const isTabMode = firstNonEmptyLine?.includes('\t') ?? false;
 
     lines.forEach((line, index) => {
-      const song = normalizeText(line);
+      if (isTabMode) {
+        const fields = line.split('\t');
+        const song = normalizeImportedField(fields[0] ?? '');
+        const artist = normalizeImportedField(fields[1] ?? '');
+        const youtubeUrl = normalizeImportedField(fields[2] ?? '');
+        const isHeaderRow =
+          index === 0 &&
+          [song, artist, youtubeUrl].map((value) => normalizeSearchText(value)).join('\t') ===
+            'musica\tartista\tyoutube';
+
+        if (isHeaderRow) return;
+        if (!song) {
+          errors.push(`Linha ${index + 1}: música inválida.`);
+          return;
+        }
+
+        const key = song.toLowerCase();
+        if (nextKeys.has(key)) {
+          errors.push(`Linha ${index + 1}: já existe (duplicada).`);
+          return;
+        }
+
+        nextKeys.add(key);
+        entriesToAdd.push({ song, artist, youtubeUrl });
+        return;
+      }
+
+      const { song, artist } = splitSongArtist(line);
       if (!song) {
         errors.push(`Linha ${index + 1}: música inválida.`);
         return;
@@ -786,10 +949,10 @@ const KaraokePage: React.FC = () => {
         return;
       }
       nextKeys.add(key);
-      songsToAdd.push(song);
+      entriesToAdd.push({ song, artist, youtubeUrl: '' });
     });
 
-    if (songsToAdd.length === 0) {
+    if (entriesToAdd.length === 0) {
       setOtherBulkErrors(errors);
       setOtherBulkAddedCount(0);
       return;
@@ -797,7 +960,7 @@ const KaraokePage: React.FC = () => {
 
     setPendingAction('other-bulk');
     try {
-      const { added, errors: apiErrors } = await addOtherBulk(songsToAdd);
+      const { added, errors: apiErrors } = await addOtherBulk(entriesToAdd);
       setOtherBulkErrors([...errors, ...apiErrors]);
       setOtherBulkAddedCount(added);
       if (added > 0) {
@@ -834,6 +997,15 @@ const KaraokePage: React.FC = () => {
     setIsRemoveAllGuestConfirmOpen(false);
   };
 
+  const openRemoveAllOtherConfirm = () => {
+    if (!isDj || otherSongs.length === 0) return;
+    setIsRemoveAllOtherConfirmOpen(true);
+  };
+
+  const closeRemoveAllOtherConfirm = () => {
+    setIsRemoveAllOtherConfirmOpen(false);
+  };
+
   const closeGuestQueueRemoveConfirm = () => {
     setGuestQueueRemoveConfirm(null);
   };
@@ -862,13 +1034,57 @@ const KaraokePage: React.FC = () => {
     }
   };
 
+  const confirmRemoveAllOtherSongs = async () => {
+    if (!isDj || otherSongs.length === 0) {
+      closeRemoveAllOtherConfirm();
+      return;
+    }
+    setPendingAction('other-clear-all');
+    try {
+      await apiRemoveAllOtherSongs();
+      closeRemoveAllOtherConfirm();
+      pushGuestMessage('Todas as outras músicas foram removidas.', 'success');
+    } catch (e) {
+      pushGuestMessage(e instanceof Error ? e.message : 'Erro ao remover.', 'error');
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
   const handleAddGuestBulk = async () => {
-    const lines = bulkText.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    const lines = bulkText.split(/\r?\n/).filter((line) => line.trim());
     const errors: string[] = [];
-    const entries: { name: string; song: string }[] = [];
+    const entries: { name: string; song: string; artist: string; youtubeUrl: string }[] = [];
     const nextKeys = new Set(guestKeys);
+    const firstNonEmptyLine = lines.find((line) => line.trim());
+    const isTabMode = firstNonEmptyLine?.includes('\t') ?? false;
 
     lines.forEach((line, index) => {
+      if (isTabMode) {
+        const fields = line.split('\t');
+        const name = normalizeImportedField(fields[0] ?? '');
+        const song = normalizeImportedField(fields[1] ?? '');
+        const artist = normalizeImportedField(fields[2] ?? '');
+        const youtubeUrl = normalizeImportedField(fields[3] ?? '');
+        const isHeaderRow =
+          index === 0 &&
+          [name, song, artist, youtubeUrl].map((value) => normalizeSearchText(value)).join('\t') ===
+            'nome\tmusica\tartista\tyoutube';
+
+        if (isHeaderRow) return;
+        if (!name) return;
+
+        const key = makeKey(name, song);
+        if (nextKeys.has(key)) {
+          errors.push(`Linha ${index + 1}: já existe (duplicada).`);
+          return;
+        }
+
+        nextKeys.add(key);
+        entries.push({ name, song, artist, youtubeUrl });
+        return;
+      }
+
       const [rawName, ...rest] = line.split(':');
       const rawSong = rest.join(':');
       const name = normalizeImportedField(rawName || '');
@@ -886,7 +1102,7 @@ const KaraokePage: React.FC = () => {
         return;
       }
       nextKeys.add(key);
-      entries.push({ name, song });
+      entries.push({ name, song, artist: '', youtubeUrl: '' });
     });
 
     if (entries.length === 0) {
@@ -1183,12 +1399,26 @@ const KaraokePage: React.FC = () => {
                                 <td className="py-3 px-4 text-[#3d2b1f] font-medium">
                                   <span className="block">{entry.name}</span>
                                   <span className="block md:hidden text-xs text-gray-500/90 mt-0.5 leading-snug">
-                                    {entry.song}
+                                    {formatSong(entry.song, entry.artist)}
                                   </span>
                                 </td>
-                                <td className="hidden md:table-cell py-3 px-4 text-gray-600">{entry.song}</td>
+                                <td className="hidden md:table-cell py-3 px-4 text-gray-600">
+                                  {formatSong(entry.song, entry.artist)}
+                                </td>
                                 <td className="py-3 px-4">
                                   <div className="flex items-center justify-end gap-2">
+                                    {entry.youtubeUrl ? (
+                                      <a
+                                        href={entry.youtubeUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="Abrir no YouTube"
+                                        title="Abrir no YouTube"
+                                        className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/25 text-[#c23b2a] hover:bg-[#8b5e3c]/10 transition-colors"
+                                      >
+                                        <Youtube className="h-4 w-4" aria-hidden />
+                                      </a>
+                                    ) : null}
                                     <button
                                       type="button"
                                       disabled={isBusy(`guest-fila-${entry.id}`)}
@@ -1285,7 +1515,7 @@ const KaraokePage: React.FC = () => {
                       <thead>
                         <tr className="border-b border-[#8b5e3c]/20">
                           <th className="text-left py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Música</th>
-                          {isDj ? (
+                          {showOtherActions ? (
                             <th className="text-right py-3 px-4 text-[#3d2b1f] font-serif font-normal text-sm">Ações</th>
                           ) : null}
                         </tr>
@@ -1293,35 +1523,49 @@ const KaraokePage: React.FC = () => {
                       <tbody>
                         {otherSongs.length === 0 ? (
                           <tr>
-                            <td colSpan={isDj ? 2 : 1} className="py-8 px-4 text-center text-gray-500 text-sm">
+                            <td colSpan={showOtherActions ? 2 : 1} className="py-8 px-4 text-center text-gray-500 text-sm">
                               Nenhuma música adicionada ainda. Clique no + para começar.
                             </td>
                           </tr>
                         ) : (
                           otherSongs.map((entry) => (
                             <tr key={entry.id} className="border-b border-[#8b5e3c]/10 hover:bg-[#8b5e3c]/5 transition-colors">
-                              <td className="py-3 px-4 text-[#3d2b1f] font-medium">{entry.song}</td>
-                              {isDj ? (
+                              <td className="py-3 px-4 text-[#3d2b1f] font-medium">{formatSong(entry.song, entry.artist)}</td>
+                              {showOtherActions ? (
                                 <td className="py-3 px-4">
-                                  <div className="flex items-center justify-end">
-                                    <button
-                                      type="button"
-                                      disabled={isBusy(`other-remove-${entry.id}`)}
-                                      aria-busy={isBusy(`other-remove-${entry.id}`)}
-                                      aria-label="Excluir"
-                                      title="Excluir"
-                                      onClick={() => void handleRemoveOther(entry.id)}
-                                      className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
-                                    >
-                                      {isBusy(`other-remove-${entry.id}`) ? (
-                                        <BtnSpinner className="h-3.5 w-3.5" />
-                                      ) : (
-                                        <>
-                                          <IconTrash className="h-4 w-4 md:hidden" />
-                                          <span className="hidden md:inline">Excluir</span>
-                                        </>
-                                      )}
-                                    </button>
+                                  <div className="flex items-center justify-end gap-2">
+                                    {entry.youtubeUrl ? (
+                                      <a
+                                        href={entry.youtubeUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="Abrir no YouTube"
+                                        title="Abrir no YouTube"
+                                        className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-[#8b5e3c]/25 text-[#c23b2a] hover:bg-[#8b5e3c]/10 transition-colors"
+                                      >
+                                        <Youtube className="h-4 w-4" aria-hidden />
+                                      </a>
+                                    ) : null}
+                                    {isDj ? (
+                                      <button
+                                        type="button"
+                                        disabled={isBusy(`other-remove-${entry.id}`)}
+                                        aria-busy={isBusy(`other-remove-${entry.id}`)}
+                                        aria-label="Excluir"
+                                        title="Excluir"
+                                        onClick={() => void handleRemoveOther(entry.id)}
+                                        className="inline-flex items-center justify-center gap-1.5 h-9 w-9 shrink-0 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide md:min-w-[5.5rem] md:w-auto md:px-4 px-0 disabled:opacity-60 disabled:pointer-events-none"
+                                      >
+                                        {isBusy(`other-remove-${entry.id}`) ? (
+                                          <BtnSpinner className="h-3.5 w-3.5" />
+                                        ) : (
+                                          <>
+                                            <IconTrash className="h-4 w-4 md:hidden" />
+                                            <span className="hidden md:inline">Excluir</span>
+                                          </>
+                                        )}
+                                      </button>
+                                    ) : null}
                                   </div>
                                 </td>
                               ) : null}
@@ -1382,7 +1626,9 @@ const KaraokePage: React.FC = () => {
                                 <div className="flex flex-col">
                                   <span className="text-sm font-medium text-[#3d2b1f]">{suggestion.name}</span>
                                   {suggestion.kind === 'pair' && suggestion.song && (
-                                    <span className="text-xs text-gray-500">{suggestion.song}</span>
+                                    <span className="text-xs text-gray-500">
+                                      {formatSong(suggestion.song, suggestion.artist ?? '')}
+                                    </span>
                                   )}
                                 </div>
                               </button>
@@ -1404,7 +1650,7 @@ const KaraokePage: React.FC = () => {
                             window.setTimeout(() => setIsSongFocused(false), 120);
                           }}
                           onKeyDown={handleSongKeyDown}
-                          placeholder="Nome da música e artista"
+                          placeholder="Música - Artista"
                           className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                         />
                         {isSongFocused && songSuggestions.length > 0 && (
@@ -1441,7 +1687,7 @@ const KaraokePage: React.FC = () => {
                                       suggestion.fromGuest ? 'text-[#5b4639]' : 'text-[#3d2b1f]'
                                     }`}
                                   >
-                                    {suggestion.song}
+                                    {formatSong(suggestion.song, suggestion.artist ?? '')}
                                   </span>
                                 </div>
                               </button>
@@ -1498,7 +1744,7 @@ const KaraokePage: React.FC = () => {
                             </td>
                           </tr>
                         ) : (
-                          queue.map((entry, index) => (
+                          queueWithYoutube.map((entry, index) => (
                             <QueueRow
                               key={entry.id}
                               item={entry}
@@ -1570,7 +1816,7 @@ const KaraokePage: React.FC = () => {
                   event.preventDefault();
                   void handleAddGuestSingle();
                 }}
-                className="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto] gap-3 items-end mb-6"
+                className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end mb-6"
               >
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wide text-gray-500">Convidado</label>
@@ -1594,7 +1840,33 @@ const KaraokePage: React.FC = () => {
                       setSingleGuestSong(event.target.value);
                       setSingleGuestError('');
                     }}
-                    placeholder="Nome da música e artista"
+                    placeholder="Música"
+                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-wide text-gray-500">Artista</label>
+                  <input
+                    value={singleGuestArtist}
+                    disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
+                    onChange={(event) => {
+                      setSingleGuestArtist(event.target.value);
+                      setSingleGuestError('');
+                    }}
+                    placeholder="Artista"
+                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-wide text-gray-500">YouTube</label>
+                  <input
+                    value={singleGuestYoutube}
+                    disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
+                    onChange={(event) => {
+                      setSingleGuestYoutube(event.target.value);
+                      setSingleGuestError('');
+                    }}
+                    placeholder="https://youtube.com/watch?v=..."
                     className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                   />
                 </div>
@@ -1602,7 +1874,7 @@ const KaraokePage: React.FC = () => {
                   type="submit"
                   disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
                   aria-busy={isBusy('guest-single')}
-                  className="w-full md:w-auto min-w-[8rem] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
+                  className="w-full md:col-span-2 md:w-auto md:justify-self-start min-w-[8rem] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
                 >
                   {isBusy('guest-single') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
                   {isBusy('guest-single') ? 'Enviando…' : 'Adicionar'}
@@ -1647,7 +1919,7 @@ const KaraokePage: React.FC = () => {
                   value={bulkText}
                   disabled={isBusy('guest-single') || isBusy('guest-bulk') || isBusy('guest-clear-all')}
                   onChange={(event) => setBulkText(event.target.value)}
-                  placeholder={`Mateus Ramos Batschauer: Não é sério - Charlie Brown Jr.\nTaciana Floriani: Aquarela - Toquinho`}
+                  placeholder={`Nome\tMusica\tArtista\tYoutube\nMateus Ramos Batschauer\tNão é sério\tCharlie Brown Jr.\thttps://youtube.com/watch?v=...\nTaciana Floriani\tAquarela\tToquinho\t<empty>`}
                   className="w-full min-h-[160px] px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                 />
                 <div className="mt-4 space-y-3">
@@ -1736,7 +2008,7 @@ const KaraokePage: React.FC = () => {
             <p className="text-sm text-[#3d2b1f] font-medium mb-1">
               {guestQueueRemoveConfirm.entry.name}
               <span className="text-gray-400 font-normal"> · </span>
-              {guestQueueRemoveConfirm.entry.song}
+              {formatSong(guestQueueRemoveConfirm.entry.song, guestQueueRemoveConfirm.entry.artist)}
             </p>
             <p className="text-sm text-gray-600 mb-6">
               Posição {guestQueueRemoveConfirm.position} na fila. Remover esta inscrição?
@@ -1799,26 +2071,52 @@ const KaraokePage: React.FC = () => {
                   event.preventDefault();
                   void handleAddOtherSingle();
                 }}
-                className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-3 items-end mb-6"
+                className="grid grid-cols-1 md:grid-cols-2 gap-3 items-end mb-6"
               >
                 <div className="space-y-2">
                   <label className="text-xs uppercase tracking-wide text-gray-500">Música</label>
                   <input
                     value={singleOtherSong}
-                    disabled={isBusy('other-single') || isBusy('other-bulk')}
+                    disabled={isBusy('other-single') || isBusy('other-bulk') || isBusy('other-clear-all')}
                     onChange={(event) => {
                       setSingleOtherSong(event.target.value);
                       setSingleOtherError('');
                     }}
-                    placeholder="Nome da música e artista"
+                    placeholder="Música"
+                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-wide text-gray-500">Artista</label>
+                  <input
+                    value={singleOtherArtist}
+                    disabled={isBusy('other-single') || isBusy('other-bulk') || isBusy('other-clear-all')}
+                    onChange={(event) => {
+                      setSingleOtherArtist(event.target.value);
+                      setSingleOtherError('');
+                    }}
+                    placeholder="Artista"
+                    className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase tracking-wide text-gray-500">YouTube</label>
+                  <input
+                    value={singleOtherYoutube}
+                    disabled={isBusy('other-single') || isBusy('other-bulk') || isBusy('other-clear-all')}
+                    onChange={(event) => {
+                      setSingleOtherYoutube(event.target.value);
+                      setSingleOtherError('');
+                    }}
+                    placeholder="https://youtube.com/watch?v=..."
                     className="w-full px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                   />
                 </div>
                 <button
                   type="submit"
-                  disabled={isBusy('other-single') || isBusy('other-bulk')}
+                  disabled={isBusy('other-single') || isBusy('other-bulk') || isBusy('other-clear-all')}
                   aria-busy={isBusy('other-single')}
-                  className="w-full md:w-auto min-w-[8rem] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
+                  className="w-full md:col-span-2 md:w-auto md:justify-self-start min-w-[8rem] inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#8b5e3c] text-white font-semibold text-sm uppercase tracking-wide hover:bg-[#6f4b30] transition-colors disabled:opacity-70 disabled:pointer-events-none"
                 >
                   {isBusy('other-single') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
                   {isBusy('other-single') ? 'Enviando…' : 'Adicionar'}
@@ -1827,24 +2125,43 @@ const KaraokePage: React.FC = () => {
               {singleOtherError && <p className="text-sm text-rose-600 mb-6">{singleOtherError}</p>}
 
               <div className="border-t border-[#8b5e3c]/10 pt-6">
-                <div className="flex items-center justify-between mb-3">
+                <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
                   <h4 className="text-lg font-serif text-[#3d2b1f]">Adicionar em lote</h4>
-                  <button
-                    type="button"
-                    disabled={isBusy('other-single') || isBusy('other-bulk')}
-                    aria-busy={isBusy('other-bulk')}
-                    onClick={() => void handleAddOtherBulk()}
-                    className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
-                  >
-                    {isBusy('other-bulk') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
-                    {isBusy('other-bulk') ? 'Importando…' : 'Importar linhas'}
-                  </button>
+                  <div className="flex flex-wrap items-center justify-end gap-2">
+                    <button
+                      type="button"
+                      disabled={isBusy('other-single') || isBusy('other-bulk') || isBusy('other-clear-all')}
+                      aria-busy={isBusy('other-bulk')}
+                      onClick={() => void handleAddOtherBulk()}
+                      className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                    >
+                      {isBusy('other-bulk') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                      {isBusy('other-bulk') ? 'Importando…' : 'Importar linhas'}
+                    </button>
+                    {isDj ? (
+                      <button
+                        type="button"
+                        disabled={
+                          otherSongs.length === 0 ||
+                          isBusy('other-single') ||
+                          isBusy('other-bulk') ||
+                          isBusy('other-clear-all')
+                        }
+                        aria-busy={isBusy('other-clear-all')}
+                        onClick={openRemoveAllOtherConfirm}
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors text-xs font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+                      >
+                        {isBusy('other-clear-all') ? <BtnSpinner className="h-3.5 w-3.5" /> : null}
+                        {isBusy('other-clear-all') ? 'Removendo…' : 'Remover tudo'}
+                      </button>
+                    ) : null}
+                  </div>
                 </div>
                 <textarea
                   value={otherBulkText}
-                  disabled={isBusy('other-single') || isBusy('other-bulk')}
+                  disabled={isBusy('other-single') || isBusy('other-bulk') || isBusy('other-clear-all')}
                   onChange={(event) => setOtherBulkText(event.target.value)}
-                  placeholder={`Não é sério - Charlie Brown Jr.\nAquarela - Toquinho`}
+                  placeholder={`Musica\tArtista\tYoutube\nNão é sério\tCharlie Brown Jr.\thttps://youtube.com/watch?v=...\nAquarela\tToquinho\t<empty>`}
                   className="w-full min-h-[160px] px-4 py-3 rounded-xl border border-[#8b5e3c]/20 focus:outline-none focus:ring-2 focus:ring-[#8b5e3c]/30 text-sm disabled:bg-[#f5f0ea] disabled:text-gray-500"
                 />
                 <div className="mt-4 space-y-3">
@@ -1869,6 +2186,49 @@ const KaraokePage: React.FC = () => {
                   )}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isRemoveAllOtherConfirmOpen && (
+        <div
+          className="fixed inset-0 z-[55] flex items-center justify-center p-4 bg-black/60"
+          onClick={closeRemoveAllOtherConfirm}
+        >
+          <div
+            className="bg-white rounded-2xl max-w-md w-full overflow-hidden shadow-2xl p-6 md:p-8"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-all-other-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <h3 id="remove-all-other-title" className="text-xl font-serif text-[#3d2b1f] mb-2">
+              Remover todas as músicas?
+            </h3>
+            <p className="text-sm text-gray-600 mb-6">
+              Remover todas as {otherSongs.length} música{otherSongs.length === 1 ? '' : 's'} da lista de outras músicas?
+              {' '}Esta ação não pode ser desfeita.
+            </p>
+            <div className="flex flex-wrap justify-end gap-3">
+              <button
+                type="button"
+                onClick={closeRemoveAllOtherConfirm}
+                disabled={isBusy('other-clear-all')}
+                className="inline-flex items-center justify-center min-h-[2.75rem] px-5 py-2.5 rounded-xl border border-[#8b5e3c]/30 text-[#8b5e3c] hover:bg-[#8b5e3c]/10 transition-colors text-sm font-semibold uppercase tracking-wide disabled:opacity-60 disabled:pointer-events-none"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => void confirmRemoveAllOtherSongs()}
+                disabled={isBusy('other-clear-all')}
+                aria-busy={isBusy('other-clear-all')}
+                className="inline-flex items-center justify-center gap-2 min-h-[2.75rem] px-5 py-2.5 rounded-xl bg-rose-600 text-white font-semibold text-sm uppercase tracking-wide hover:bg-rose-700 transition-colors disabled:opacity-70 disabled:pointer-events-none"
+              >
+                {isBusy('other-clear-all') ? <BtnSpinner className="h-4 w-4 text-white" /> : null}
+                {isBusy('other-clear-all') ? 'Removendo…' : 'Remover tudo'}
+              </button>
             </div>
           </div>
         </div>

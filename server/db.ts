@@ -10,9 +10,9 @@ if (!process.env.DATABASE_URL) {
 
 export const sql = neon(process.env.DATABASE_URL);
 
-export type QueueRow = { id: string; name: string; song: string };
-export type GuestRow = { id: string; name: string; song: string };
-export type OtherRow = { id: string; song: string };
+export type QueueRow = { id: string; name: string; song: string; artist: string; youtubeUrl: string };
+export type GuestRow = { id: string; name: string; song: string; artist: string; youtubeUrl: string };
+export type OtherRow = { id: string; song: string; artist: string; youtubeUrl: string };
 
 export type KaraokeState = {
   queue: QueueRow[];
@@ -22,17 +22,17 @@ export type KaraokeState = {
 
 export async function loadState(): Promise<KaraokeState> {
   const queue = await sql`
-    SELECT id::text AS id, name, song
+    SELECT id::text AS id, name, song, artist, youtube_url AS "youtubeUrl"
     FROM karaoke_queue
     ORDER BY sort_order ASC, created_at ASC
   `;
   const guestSongs = await sql`
-    SELECT id::text AS id, name, song
+    SELECT id::text AS id, name, song, artist, youtube_url AS "youtubeUrl"
     FROM karaoke_guest_songs
     ORDER BY created_at ASC
   `;
   const otherSongs = await sql`
-    SELECT id::text AS id, song
+    SELECT id::text AS id, song, artist, youtube_url AS "youtubeUrl"
     FROM karaoke_other_songs
     ORDER BY created_at ASC
   `;
@@ -43,29 +43,29 @@ export async function loadState(): Promise<KaraokeState> {
   };
 }
 
-export async function addQueueEntry(name: string, song: string): Promise<void> {
+export async function addQueueEntry(name: string, song: string, artist: string, youtubeUrl: string): Promise<void> {
   const rows = await sql`
     SELECT MAX(sort_order) AS max FROM karaoke_queue
   `;
   const max = (rows[0] as { max: number | null } | undefined)?.max;
   const next = (max ?? -1) + 1;
   await sql`
-    INSERT INTO karaoke_queue (sort_order, name, song)
-    VALUES (${next}, ${name}, ${song})
+    INSERT INTO karaoke_queue (sort_order, name, song, artist, youtube_url)
+    VALUES (${next}, ${name}, ${song}, ${artist}, ${youtubeUrl})
   `;
 }
 
-export async function addGuestSong(name: string, song: string): Promise<void> {
+export async function addGuestSong(name: string, song: string, artist: string, youtubeUrl: string): Promise<void> {
   await sql`
-    INSERT INTO karaoke_guest_songs (name, song)
-    VALUES (${name}, ${song})
+    INSERT INTO karaoke_guest_songs (name, song, artist, youtube_url)
+    VALUES (${name}, ${song}, ${artist}, ${youtubeUrl})
   `;
 }
 
-export async function addOtherSong(song: string): Promise<void> {
+export async function addOtherSong(song: string, artist: string, youtubeUrl: string): Promise<void> {
   await sql`
-    INSERT INTO karaoke_other_songs (song)
-    VALUES (${song})
+    INSERT INTO karaoke_other_songs (song, artist, youtube_url)
+    VALUES (${song}, ${artist}, ${youtubeUrl})
   `;
 }
 
@@ -79,6 +79,13 @@ export async function deleteGuestSong(id: string): Promise<boolean> {
 export async function deleteAllGuestSongs(): Promise<number> {
   const rows = await sql`
     DELETE FROM karaoke_guest_songs RETURNING id
+  `;
+  return rows.length;
+}
+
+export async function deleteAllOtherSongs(): Promise<number> {
+  const rows = await sql`
+    DELETE FROM karaoke_other_songs RETURNING id
   `;
   return rows.length;
 }

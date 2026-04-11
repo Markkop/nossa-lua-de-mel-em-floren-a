@@ -1,5 +1,5 @@
-export type KaraokeEntry = { id: string; name: string; song: string };
-export type OtherSong = { id: string; song: string };
+export type KaraokeEntry = { id: string; name: string; song: string; artist: string; youtubeUrl: string };
+export type OtherSong = { id: string; song: string; artist: string; youtubeUrl: string };
 
 export type KaraokeState = {
   queue: KaraokeEntry[];
@@ -39,25 +39,27 @@ export async function djLogin(pin: string): Promise<string> {
   return token;
 }
 
-export async function postQueue(name: string, song: string): Promise<void> {
+export async function postQueue(name: string, song: string, artist = '', youtubeUrl = ''): Promise<void> {
   const res = await fetch(apiUrl('/api/karaoke/queue'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, song }),
+    body: JSON.stringify({ name, song, artist, youtubeUrl }),
   });
   if (!res.ok) throw new Error(await parseError(res));
 }
 
-export async function postGuestSong(name: string, song: string): Promise<void> {
+export async function postGuestSong(name: string, song: string, artist = '', youtubeUrl = ''): Promise<void> {
   const res = await fetch(apiUrl('/api/karaoke/guest-songs'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, song }),
+    body: JSON.stringify({ name, song, artist, youtubeUrl }),
   });
   if (!res.ok) throw new Error(await parseError(res));
 }
 
-export async function postGuestSongsBulk(entries: { name: string; song: string }[]): Promise<{
+export async function postGuestSongsBulk(
+  entries: { name: string; song: string; artist?: string; youtubeUrl?: string }[]
+): Promise<{
   added: number;
   errors: string[];
 }> {
@@ -70,20 +72,22 @@ export async function postGuestSongsBulk(entries: { name: string; song: string }
   return res.json() as Promise<{ added: number; errors: string[] }>;
 }
 
-export async function postOtherSong(song: string): Promise<void> {
+export async function postOtherSong(song: string, artist = '', youtubeUrl = ''): Promise<void> {
   const res = await fetch(apiUrl('/api/karaoke/other-songs'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ song }),
+    body: JSON.stringify({ song, artist, youtubeUrl }),
   });
   if (!res.ok) throw new Error(await parseError(res));
 }
 
-export async function postOtherSongsBulk(songs: string[]): Promise<{ added: number; errors: string[] }> {
+export async function postOtherSongsBulk(
+  entries: { song: string; artist?: string; youtubeUrl?: string }[]
+): Promise<{ added: number; errors: string[] }> {
   const res = await fetch(apiUrl('/api/karaoke/other-songs-bulk'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ songs }),
+    body: JSON.stringify({ entries }),
   });
   if (!res.ok) throw new Error(await parseError(res));
   return res.json() as Promise<{ added: number; errors: string[] }>;
@@ -142,6 +146,17 @@ export async function deleteGuestSong(id: string, token: string): Promise<void> 
 
 export async function deleteAllGuestSongs(token: string): Promise<{ removed: number }> {
   const res = await fetch(apiUrl('/api/karaoke/guest-songs-clear'), {
+    method: 'POST',
+    headers: authHeaders(token),
+    // Empty JSON object: Fastify rejects POST+application/json with no body (400).
+    body: JSON.stringify({}),
+  });
+  if (!res.ok) throw new Error(await parseError(res));
+  return res.json() as Promise<{ removed: number }>;
+}
+
+export async function deleteAllOtherSongs(token: string): Promise<{ removed: number }> {
+  const res = await fetch(apiUrl('/api/karaoke/other-songs-clear'), {
     method: 'POST',
     headers: authHeaders(token),
     // Empty JSON object: Fastify rejects POST+application/json with no body (400).

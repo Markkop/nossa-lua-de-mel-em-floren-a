@@ -1,0 +1,161 @@
+Nome	Música	Artista	Youtube
+Marcelo Kopmann	Idiota	Jão	https://youtu.be/O0mhku5Yq9w
+Yoshabel Macedo Batschauer	City of Stars	La La Land	https://youtu.be/gI4T40r2-_E
+Potyra Najara Vieira Macedo Borba	Despacito	Luis Fonsi	https://youtu.be/IU28N1tioRk
+Rafael Gomez Perez	What A Wonderful World	Louis Armstrong	https://youtu.be/9BCQqo1XMVw
+Magali Janssen Kopmann	Cheia de Manias	Raça Negra	https://youtu.be/qbCUViw6-5I
+Ditmar Kopmann	Ding Dong, Sing My Song	Michael English	https://youtu.be/WhuV-g8m4Bg
+Isabeli do Carmo Alves	<empty>	<empty>	<empty>
+Theo Luan Franco Velho	Vagalumes	Pollo	https://youtu.be/F9JAlPODKnM
+Gabriela Riedel	This Must Be the Place	Talking Heads	https://youtu.be/gUNy0-P6lCE
+Gustavo Dutra	Fill in the Blank	Car Seat Headrest	https://youtu.be/z7T7Ka9kb8g
+Cora Dutra	A Thousand Miles	Vanessa Carlton	https://youtu.be/nNMM_uO4vwM
+Evelin Licker de Lima	<empty>	<empty>	<empty>
+Bruna da Silva Francisco	House Tour	Sabrina Carpenter	https://youtu.be/MJYxZ7d-VPo
+Maria Eduarda de Oliveira	Satisfied	Hamilton (Musical)	https://youtu.be/CAr-gOZxQcM
+Valentina Bergonsi Mancuso	Manchild	Sabrina Carpenter	https://youtu.be/svpQ-5YjUuE
+Antônia da Silva	Sine From Above	Lady Gaga	https://youtu.be/CrNZcSTpKfQ
+Mateus Ramos Batschauer	Não é Sério	Charlie Brown Jr.	https://youtu.be/U7pA57moaG0
+Maria Luiza Francisco	Pontos de Exclamação	Jovem Dionísio & Vintage Culture	https://youtu.be/2dZcop9rrLE
+Julia Caldas Batschauer Silva	Cores do Vento	Pocahontas	https://youtu.be/Gu2g3lbiwEA
+Athylla Lima Silva	Lá Vou Eu	Irmão Urso	https://youtu.be/2cQbSlr6sck
+Maikon John Berto	<empty>	<empty>	<empty>
+Eduarda Ribeiro Leite	I Miss You	Blink-182	https://youtu.be/8sAOYg6yo-A
+Teresa Apolonia Mazon	<empty>	<empty>	<empty>
+Lorena Bilk Faria	<empty>	<empty>	<empty>
+João Vitor Gonçalves de Faria	<empty>	<empty>	<empty>
+Salete Reche Andrade	<empty>	<empty>	<empty>
+Angela Reche Borba	<empty>	<empty>	<empty>
+Pablo Borba	<empty>	<empty>	<empty>
+Mariana Reche Borba	<empty>	<empty>	<empty>
+Beatriz Reche Borba	From the Start	Laufey	https://youtu.be/mLBgmXGAlmc
+Alice Reche Borba	<empty>	<empty>	<empty>
+Jussara Vieira Macedo	<empty>	<empty>	<empty>
+Cristiano Pereira	<empty>	<empty>	<empty>
+Indyanara Vieira Macedo Borba	Cabide	Mart'nália	https://youtu.be/5jzKcGy_Hr8
+Ramon Oliveira de Souza	<empty>	<empty>	<empty>
+Luciano Aquino Meireles dos Santos Junior	<empty>	<empty>	<empty>
+Taciana Floriani	Aquarela	Toquinho	https://youtu.be/NcAorgMMbCY
+Elisa Floriani Teixeira	<empty>	<empty>	<empty>
+Francisco Floriani Teixeira	<empty>	<empty>	<empty>
+Lucas Pacheco Teixeira	<empty>	<empty>	<empty>
+Juceli Maria Floriani	<empty>	<empty>	<empty>
+José Floriani	<empty>	<empty>	<empty>
+Mirele Floriani	<empty>	<empty>	<empty>
+Claus Henrique Janssen	<empty>	<empty>	<empty>
+Maira Betina Manske Janssen	<empty>	<empty>	<empty>
+Ignez Janssen	<empty>	<empty>	<empty>
+Amandia Maria de Borba	<empty>	<empty>	<empty>
+Anna Paula de Borba Batschauer	<empty>	<empty>	<empty>
+Luiz Pedro Gadelha da Silva	Thriller	Michael Jackson	https://youtu.be/fztTUhjdJLQ
+Maria Paula Acris Marques	<empty>	<empty>	<empty>
+Jan Vieira Schott	<empty>	<empty>	<empty>
+Gabriel Volinger dos Santos	<empty>	<empty>	<empty>
+Monique Cibelle das Neves	<empty>	<empty>	<empty>
+Bruna Moreira Pierami	<empty>	<empty>	<empty>
+Luciano Pedro Estevão	<empty>	<empty>	<empty>
+Terezinha Lenita de Miranda Novaes	<empty>	<empty>	<empty>
+Jessica Zeferino	<empty>	<empty>	<empty>
+Carlos Barão	<empty>	<empty>	<empty>
+Mariana Mantovani	<empty>	<empty>	<empty>
+Tom Mantovani	<empty>	<empty>	<empty>
+Senira Mantovani	<empty>	<empty>	<empty>
+Henrique Pereira Ramos	<empty>	<empty>	<empty>
+Vitória Gabriela dos Santos	<empty>	<empty>	<empty>
+Ion José de Souza Neto	<empty>	<empty>	<empty>
+Artur Simão	<empty>	<empty>	<empty>
+Madeleine Trindade	Back to Friends	Sombr	https://youtu.be/4OSaGufgrIk
+Lucas Guedes	From the Start	Laufey	https://youtu.be/mLBgmXGAlmc
+Jorge Kunrath Santin	<empty>	<empty>	<empty>
+Adriana Miranda da Cunha	<empty>	<empty>	<empty>
+Marcos Elias Berghahn	<empty>	<empty>	<empty>
+Adriana Lauffer	<empty>	<empty>	<empty>
+Guilherme de Moraes Trautmann	<empty>	<empty>	<empty>
+Izadora Fernandes Ribas	<empty>	<empty>	<empty>
+Luiz Henrique Casett Horn	<empty>	<empty>	<empty>
+Diego de Medeiros Pereira	Quem de Nós Dois	Ana Carolina	https://youtu.be/0H820U7Wpu8
+Jefferson Michels	<empty>	<empty>	<empty>
+Amanda Góss	<empty>	<empty>	<empty>
+Gabriel Pedroso Justus	<empty>	<empty>	<empty>
+Yuri Allysson "Pedro" de Oliveira Nekel	On the Street Where You Live	My Fair Lady	https://youtu.be/6cpa61r4JKU
+Áurea Aires de Oliveira	<empty>	<empty>	<empty>
+Franciele Daltoé	<empty>	<empty>	<empty>
+Mariana Rocha Siqueira de Araújo e Souza	<empty>	<empty>	<empty>
+Fernanda Lazzari	<empty>	<empty>	<empty>
+JACQUELINE DOS SANTOS MARTINEZ	<empty>	<empty>	<empty>
+Jardel Fischer Loeck	<empty>	<empty>	<empty>
+Inaiá Jéssica Marinho Avelar	<empty>	<empty>	<empty>
+Pablo Ricardo Kuehl de Castro	<empty>	<empty>	<empty>
+Daniel kopmann	<empty>	<empty>	<empty>
+Ilmara kopmann	<empty>	<empty>	<empty>
+Johannes kopmann	<empty>	<empty>	<empty>
+Gregory kopmann	<empty>	<empty>	<empty>
+Rafaela Moraes	<empty>	<empty>	<empty>
+Rosa	<empty>	<empty>	<empty>
+Henrique Augusto Rosa de Morais	<empty>	<empty>	<empty>
+			
+Outras			
+Música	Artista	Youtube	
+Golden (Brilho)	Guerreiras do K-Pop	https://youtu.be/Iz9hkQTWiW8	
+Seu Ídolo	Guerreiras do K-Pop	https://youtu.be/nNvDgwL_k1s	
+Numb	Linkin Park	https://youtu.be/ZA0IsQK1jGM	
+In the End	Linkin Park	https://youtu.be/uIcmAyAJ5hE	
+Evidências	Chitãozinho & Xororó	https://youtu.be/tfhwXKd1W_o	
+Malandragem	Cássia Eller	https://youtu.be/DvapaZQTmeQ	
+Anna Júlia	Los Hermanos	https://youtu.be/d_sQIBh01GQ	
+Não Quero Dinheiro (Só Quero Amar)	Tim Maia	https://youtu.be/5eJwf_k68r8	
+Cheia de Manias	Raça Negra	https://youtu.be/qbCUViw6-5I	
+Esqueça-me Se For Capaz	Marília Mendonça	https://youtu.be/TYe88e4CCWM	
+Dormi Na Praça	Bruno & Marrone	https://youtu.be/wxdoFa3H71s	
+Ragatanga (Asereje)	Rouge	https://youtu.be/ITeucU2ysB0	
+Tempo Perdido	Legião Urbana	https://youtu.be/oPEsF8Rj0w8	
+Olhar 43	RPM	https://youtu.be/m7k_gJo3Hic	
+Fico Assim Sem Você	Claudinho & Buchecha	https://youtu.be/TrHy-kPp4zI	
+A Bomba	Braga Boys	https://youtu.be/RX6OLCpLehw	
+Não Falamos do Bruno	Encanto	https://youtu.be/TrqQN46Plbs	
+Saber Quem Sou	Moana	https://youtu.be/-CMkAiiokn4	
+Velha Infância	Tribalistas	https://youtu.be/lDaLPv_InjE	
+Como Nossos Pais	Elis Regina	https://youtu.be/Xl4LCRbNmdY	
+O Amor e o Poder	Rosana	https://youtu.be/Gd_qy3JoVnc	
+Fogo e Paixão	Wando	https://youtu.be/jlvxQJfdYLI	
+Whisky a Go-Go	Roupa Nova	https://youtu.be/yLi0bxyvJuI	
+Eduardo e Mônica	Legião Urbana	https://youtu.be/MXWLZ-AHUg4	
+Mulher de Fases	Raimundos	https://youtu.be/bYHODtXnuqo	
+Menina Veneno	Ritchie	https://youtu.be/25hHYmowa38	
+A Lenda	Sandy & Júnior	https://youtu.be/XFlHc3hnsEc	
+I Want It That Way	Backstreet Boys	https://youtu.be/khnQaSMer90	
+Girls Just Wanna Have Fun	Cyndi Lauper	https://youtu.be/n55fjqx4f9A	
+Wannabe	Spice Girls	https://youtu.be/DO1XCUjxrRk	
+Livin’ On a Prayer	Bon Jovi	https://youtu.be/oVAyWQHzHJI	
+Dancing Queen	ABBA	https://youtu.be/qjMSGIfB1j8	
+Eye Of The Tiger	Survivor	https://youtu.be/-8PTjTDwf9M	
+I Will Survive	Gloria Gaynor	https://youtu.be/HwzIjdiNlhM	
+All Star	Smash Mouth	https://youtu.be/Ye6e50mwG9E	
+Shake It Off	Taylor Swift	https://youtu.be/tCqNQdQDyU4	
+Wonderwall	Oasis	https://youtu.be/I4RwbQ9zUEU	
+Take On Me	a-ha	https://youtu.be/8gCZcyp1dTw	
+Billie Jean	Michael Jackson	https://youtu.be/2HGEFy7aXwc	
+Like a Virgin	Madonna	https://youtu.be/sTgO7TS7FCU	
+I Want To Break Free	Queen	https://youtu.be/vQdMnVKj2jQ	
+Sweet Child O' Mine	Guns N' Roses	https://youtu.be/TBxAAOOJzL8	
+Don't Stop Believin'	Journey	https://youtu.be/gzsSSqAN-jI	
+What's Up?	4 Non Blondes	https://youtu.be/DmiaGOStaNI	
+...Baby One More Time	Britney Spears	https://youtu.be/VcDrr50sF3I	
+Stayin' Alive	Bee Gees	https://youtu.be/w-bGMo4q-aA	
+Bad Romance	Lady Gaga	https://youtu.be/Z7sHRNNElDE	
+Don't Stop the Music	Rihanna	https://youtu.be/BjPvurSTElg	
+I Gotta Feeling	Black Eyed Peas	https://youtu.be/GzoTgLGX7IM	
+Call Me Maybe	Carly Rae Jepsen	https://youtu.be/1gcko1tm5BY	
+Timber	Pitbull & Kesha	https://youtu.be/SWlKOTBzTwQ	
+Hakuna Matata	O Rei Leão	https://youtu.be/5Ed0AYzX_FE	
+Livre Estou / Let It Go	Frozen	https://youtu.be/6WQN0ofGnq0	
+Aqui no Mar / Under the Sea	A Pequena Sereia	https://youtu.be/SU9mYrrSXfw	
+Saber Quem Sou / How Far I'll Go	Moana	https://youtu.be/-CMkAiiokn4	
+Um Mundo Ideal / A Whole New World	Aladdin	https://youtu.be/xTWhawQPYPU	
+Vejo Uma Porta Abrir	Frozen	https://youtu.be/Qpet9_-ao14	
+Amigo Estou Aqui	Toy Story	https://youtu.be/Yb_lPkqMv2A	
+Sentimentos São	A Bela e a Fera	https://youtu.be/zNLRPDj6m9w	
+This Is Me	The Greatest Showman	https://youtu.be/Qo9D-LvMzlQ	
+The Other Side	The Greatest Showman	https://youtu.be/67RCFZEEYHM	
+My Shot	Hamilton	https://youtu.be/_vr5w9PefnM	
+You'll Be Back	Hamilton	https://youtu.be/NeyIh_uFilY	
