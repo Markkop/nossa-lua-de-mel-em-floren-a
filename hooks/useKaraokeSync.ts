@@ -31,6 +31,8 @@ export function useKaraokeSync() {
   const [loadError, setLoadError] = useState<string | null>(null);
   const [djToken, setDjTokenState] = useState(() => sessionStorage.getItem(DJ_TOKEN_KEY) ?? '');
   const initialLoadDone = useRef(false);
+  const intervalRef = useRef<number | null>(null);
+  const inFlightRef = useRef<Promise<void> | null>(null);
 
   const applyState = useCallback((state: KaraokeState) => {
     setQueue(state.queue);
@@ -70,22 +72,54 @@ export function useKaraokeSync() {
   useEffect(() => {
     let cancelled = false;
 
-    const tick = async () => {
-      await refreshKaraokeRef.current();
-      if (!cancelled && !initialLoadDone.current) {
-        initialLoadDone.current = true;
-        setIsLoading(false);
+    const clearPolling = () => {
+      if (intervalRef.current !== null) {
+        window.clearInterval(intervalRef.current);
+        intervalRef.current = null;
       }
     };
 
-    void tick();
-    const id = window.setInterval(() => {
+    const tick = async () => {
+      if (inFlightRef.current) return inFlightRef.current;
+
+      const request = refreshKaraokeRef.current().finally(() => {
+        if (inFlightRef.current === request) {
+          inFlightRef.current = null;
+        }
+        if (!cancelled && !initialLoadDone.current) {
+          initialLoadDone.current = true;
+          setIsLoading(false);
+        }
+      });
+
+      inFlightRef.current = request;
+      return request;
+    };
+
+    const startPolling = () => {
+      if (document.visibilityState !== 'visible' || intervalRef.current !== null) return;
+      intervalRef.current = window.setInterval(() => {
+        void tick();
+      }, POLL_MS);
+    };
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        clearPolling();
+        return;
+      }
       void tick();
-    }, POLL_MS);
+      startPolling();
+    };
+
+    void tick();
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
       cancelled = true;
-      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      clearPolling();
     };
   }, []);
 
