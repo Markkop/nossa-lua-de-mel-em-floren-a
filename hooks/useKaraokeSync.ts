@@ -21,15 +21,7 @@ import {
 
 const DJ_TOKEN_KEY = 'karaoke_dj_token';
 
-/** Default ~1 min; override with VITE_KARAOKE_POLL_MS (milliseconds, min 1000). */
-const DEFAULT_POLL_MS = 60_000;
-
-function getPollIntervalMs(): number {
-  const raw = import.meta.env.VITE_KARAOKE_POLL_MS;
-  if (raw === undefined || raw === '') return DEFAULT_POLL_MS;
-  const n = Number(raw);
-  return Number.isFinite(n) && n >= 1000 ? n : DEFAULT_POLL_MS;
-}
+const POLL_MS = 5_000;
 
 export function useKaraokeSync() {
   const [queue, setQueue] = useState<KaraokeEntry[]>([]);
@@ -77,7 +69,6 @@ export function useKaraokeSync() {
 
   useEffect(() => {
     let cancelled = false;
-    const pollMs = getPollIntervalMs();
 
     const tick = async () => {
       await refreshKaraokeRef.current();
@@ -90,7 +81,7 @@ export function useKaraokeSync() {
     void tick();
     const id = window.setInterval(() => {
       void tick();
-    }, pollMs);
+    }, POLL_MS);
 
     return () => {
       cancelled = true;

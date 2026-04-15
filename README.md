@@ -14,7 +14,7 @@ Os códigos PIX são configurados no arquivo `.env.local` usando as variáveis d
 
 ## Karaokê (Neon + API)
 
-A página de karaokê usa um backend Node (`server/main.ts`) com Postgres na Neon e REST em `/api/karaoke/*`. O browser **consulta o estado em intervalos** (`GET /api/karaoke/state`, configurável com `VITE_KARAOKE_POLL_MS`); após cada alteração a UI também atualiza de imediato.
+A página de karaokê usa um backend Node (`server/main.ts`) com Postgres na Neon e REST em `/api/karaoke/*`. O browser **consulta o estado em intervalos de 5 segundos** (`GET /api/karaoke/state`); após cada alteração a UI também atualiza de imediato.
 
 - **Desenvolvimento**: `pnpm dev` sobe o Vite (porta 3000) e o servidor da API (porta 8787), com proxy de `/api` no Vite.
 - **Variáveis**: copie `DATABASE_URL`, `KARAOKE_DJ_PIN` e `KARAOKE_JWT_SECRET` para `.env.local` (veja `.env.example`). O PIN do DJ abre o “Modo DJ” na interface.
