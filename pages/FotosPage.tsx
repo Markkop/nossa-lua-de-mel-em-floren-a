@@ -579,6 +579,17 @@ const FotosPage: React.FC = () => {
 
       <footer className="bg-[#3d2b1f] px-5 py-20 text-center text-white">
         <p className="font-serif text-4xl text-[#e6d5c3]">Com amor, Yosha & Mark</p>
+        <p className="mt-8 text-xs uppercase tracking-[0.2em] text-white/55">
+          Fotografias por{' '}
+          <a
+            href="https://www.instagram.com/nathachajaquesfotografia/"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[#e6d5c3] underline decoration-[#e6d5c3]/35 underline-offset-4 transition hover:text-white"
+          >
+            Natacha Jaques Fotografia
+          </a>
+        </p>
       </footer>
 
       {lightboxIndex !== null && (
