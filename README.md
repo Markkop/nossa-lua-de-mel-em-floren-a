@@ -19,3 +19,13 @@ A página de karaokê usa um backend Node (`server/main.ts`) com Postgres na Neo
 - **Desenvolvimento**: `pnpm dev` sobe o Vite (porta 3000) e o servidor da API (porta 8787), com proxy de `/api` no Vite.
 - **Variáveis**: copie `DATABASE_URL`, `KARAOKE_DJ_PIN` e `KARAOKE_JWT_SECRET` para `.env.local` (veja `.env.example`). O PIN do DJ abre o “Modo DJ” na interface.
 - **Produção**: sirva o front estático e rode `pnpm start:server` (ou o equivalente) onde `DATABASE_URL` estiver definido; se o front e a API forem domínios diferentes, defina `VITE_KARAOKE_API_URL`.
+
+## Galeria de fotos
+
+A rota `/fotos` usa autenticação por cookie HTTP-only e entrega as imagens por uma API conectada a um Vercel Blob privado.
+
+- **Senha compartilhada**: `tudolindo`.
+- **Variáveis**: `PHOTO_GALLERY_JWT_SECRET` e `BLOB_READ_WRITE_TOKEN`.
+- **Fonte local**: `~/Downloads/Casamento Yoshark 18.04.26`.
+- **Preparar e enviar**: execute `pnpm photos:prepare`. O comando gera JPEGs progressivos de até 1600 px, valida as duas câmeras, atualiza o manifesto e envia somente arquivos ausentes.
+- **Cache temporário**: os derivados ficam em `.photo-gallery-cache/`, que não é versionado.

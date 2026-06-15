@@ -30,3 +30,7 @@ dist-ssr
 
 Codex.dmg
 .vercel
+.env*
+
+# Generated photo derivatives before they are uploaded to private Blob storage
+.photo-gallery-cache/

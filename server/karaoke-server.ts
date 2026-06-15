@@ -5,6 +5,7 @@ import Fastify from 'fastify';
 import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 
 import * as db from './db.js';
+import { registerPhotoGalleryRoutes } from './photo-gallery-server.js';
 
 const DJ_PIN = process.env.KARAOKE_DJ_PIN ?? '0000';
 const JWT_SECRET = new TextEncoder().encode(
@@ -72,6 +73,7 @@ export async function buildApp() {
   const fastify = Fastify({ logger: true, trustProxy: true });
 
   await fastify.register(cors, { origin: true });
+  await registerPhotoGalleryRoutes(fastify);
 
   fastify.get('/api/karaoke/health', async () => ({ ok: true }));
 
