@@ -46,6 +46,7 @@ const SubdomainRouter: React.FC = () => {
       <Route path="/hospedagem" element={<HospedagemPage />} />
       <Route path="/karaoke" element={<KaraokePage />} />
       <Route path="/fotos" element={<FotosPage />} />
+      <Route path="/seu-casamento" element={<WeddingSitePlansPage />} />
       <Route path="/seu-site-de-casamento" element={<WeddingSitePlansPage />} />
       <Route path="/missao" element={<GamePage />} />
       <Route path="/game" element={<Navigate to="/missao" replace />} />
