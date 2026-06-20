@@ -59,7 +59,7 @@ const HomePage: React.FC = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={1.5}
-                  d="M9 9l10.5-3m0 0l-3 10.5M19.5 6L12 13.5M7 21a4 4 0 100-8 4 4 0 000 8zm0 0v-6m0 6h3"
+                  d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                 />
               </svg>
               <span className="flex flex-col items-start">
