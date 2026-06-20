@@ -6,6 +6,8 @@ export interface PhotoGalleryPhoto {
   height: number;
   bytes: number;
   pathname: string;
+  thumbnailBytes: number;
+  thumbnailPathname: string;
 }
 
 export interface PhotoGallerySection {

@@ -27,5 +27,5 @@ A rota `/fotos` usa autenticação por cookie HTTP-only e entrega as imagens por
 - **Senha compartilhada**: `tudolindo`.
 - **Variáveis**: `PHOTO_GALLERY_JWT_SECRET` e `BLOB_READ_WRITE_TOKEN`.
 - **Fonte local**: `~/Downloads/Casamento Yoshark 18.04.26`.
-- **Preparar e enviar**: execute `pnpm photos:prepare`. O comando gera JPEGs progressivos de até 1600 px, valida as duas câmeras, atualiza o manifesto e envia somente arquivos ausentes.
+- **Preparar e enviar**: execute `pnpm photos:prepare`. O comando gera JPEGs progressivos de até 1600 px para o lightbox e thumbnails de até 640 px para a grade, valida as duas câmeras, atualiza o manifesto e envia somente arquivos ausentes.
 - **Cache temporário**: os derivados ficam em `.photo-gallery-cache/`, que não é versionado.

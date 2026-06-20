@@ -88,9 +88,9 @@ async function sendPhoto(
   request: FastifyRequest,
   reply: FastifyReply,
   photo: PhotoGalleryPhoto,
-  options: { publicCache?: boolean; download?: boolean } = {},
+  options: { publicCache?: boolean; download?: boolean; thumbnail?: boolean } = {},
 ) {
-  const result = await get(photo.pathname, {
+  const result = await get(options.thumbnail ? photo.thumbnailPathname : photo.pathname, {
     access: 'private',
     ifNoneMatch:
       typeof request.headers['if-none-match'] === 'string'
@@ -104,7 +104,9 @@ async function sendPhoto(
     .header('ETag', result.blob.etag)
     .header(
       'Cache-Control',
-      options.publicCache ? 'public, max-age=3600, s-maxage=86400' : 'private, no-cache',
+      options.publicCache
+        ? 'public, max-age=3600, s-maxage=86400'
+        : 'private, max-age=31536000, immutable',
     )
     .header('X-Content-Type-Options', 'nosniff');
 
@@ -120,7 +122,9 @@ async function sendPhoto(
 }
 
 export async function registerPhotoGalleryRoutes(app: FastifyInstance) {
-  app.get<{ Querystring: { action?: string; id?: string; download?: string } }>(
+  app.get<{
+    Querystring: { action?: string; id?: string; download?: string; variant?: string };
+  }>(
     '/api/photos',
     async (request, reply) => {
       const action = request.query.action ?? 'session';
@@ -146,7 +150,15 @@ export async function registerPhotoGalleryRoutes(app: FastifyInstance) {
             title: section.title,
             camera: section.camera,
             count: section.count,
-            photos: section.photos.map(({ pathname: _pathname, bytes: _bytes, ...photo }) => photo),
+            photos: section.photos.map(
+              ({
+                pathname: _pathname,
+                bytes: _bytes,
+                thumbnailPathname: _thumbnailPathname,
+                thumbnailBytes: _thumbnailBytes,
+                ...photo
+              }) => photo,
+            ),
           })),
         };
       }
@@ -163,7 +175,15 @@ export async function registerPhotoGalleryRoutes(app: FastifyInstance) {
       const photo = photoById.get(id);
       if (!photo) return reply.code(404).send({ error: 'Foto não encontrada.' });
 
-      return sendPhoto(request, reply, photo, { download: request.query.download === '1' });
+      const thumbnail = request.query.variant === 'thumbnail';
+      if (request.query.variant && !thumbnail) {
+        return reply.code(400).send({ error: 'Variante inválida.' });
+      }
+
+      return sendPhoto(request, reply, photo, {
+        download: request.query.download === '1',
+        thumbnail,
+      });
     },
   );
 

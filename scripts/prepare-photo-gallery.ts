@@ -2,6 +2,7 @@ import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { list, put } from '@vercel/blob';
+import dotenv from 'dotenv';
 import exifr from 'exifr';
 import sharp from 'sharp';
 
@@ -10,6 +11,8 @@ import type {
   PhotoGalleryPhoto,
   PhotoGallerySection,
 } from '../data/photo-gallery-types.js';
+
+dotenv.config({ path: '.env.local' });
 
 const SOURCE_DIRECTORY =
   process.env.PHOTO_SOURCE_DIRECTORY ??
@@ -20,6 +23,8 @@ const VERSION = 'wedding-gallery/v1';
 const MAX_TOTAL_BYTES = 900 * 1024 * 1024;
 const MAX_DIMENSION = 1600;
 const JPEG_QUALITY = 78;
+const THUMBNAIL_MAX_DIMENSION = 640;
+const THUMBNAIL_JPEG_QUALITY = 60;
 
 const CAMERA_CONFIG = {
   'Canon EOS R6m2': { sectionId: 'camera-1', title: 'Câmera 1', slug: 'r6m2', expected: 915 },
@@ -70,9 +75,17 @@ async function processPhoto(filename: string, index: number): Promise<PhotoGalle
   const paddedSequence = String(sequence).padStart(4, '0');
   const id = `${config.slug}-${paddedSequence}`;
   const pathname = `${VERSION}/${config.slug}/${paddedSequence}.jpg`;
+  const thumbnailPathname = `${VERSION}/thumbnails/${config.slug}/${paddedSequence}.jpg`;
   const outputPath = path.join(CACHE_DIRECTORY, config.slug, `${paddedSequence}.jpg`);
+  const thumbnailOutputPath = path.join(
+    CACHE_DIRECTORY,
+    'thumbnails',
+    config.slug,
+    `${paddedSequence}.jpg`,
+  );
 
   await mkdir(path.dirname(outputPath), { recursive: true });
+  await mkdir(path.dirname(thumbnailOutputPath), { recursive: true });
 
   const result = await sharp(sourcePath)
     .autoOrient()
@@ -89,6 +102,20 @@ async function processPhoto(filename: string, index: number): Promise<PhotoGalle
     })
     .toFile(outputPath);
 
+  const thumbnailResult = await sharp(outputPath)
+    .resize({
+      width: THUMBNAIL_MAX_DIMENSION,
+      height: THUMBNAIL_MAX_DIMENSION,
+      fit: 'inside',
+      withoutEnlargement: true,
+    })
+    .jpeg({
+      quality: THUMBNAIL_JPEG_QUALITY,
+      progressive: true,
+      mozjpeg: true,
+    })
+    .toFile(thumbnailOutputPath);
+
   if ((index + 1) % 50 === 0 || index === 0) {
     console.log(`Processadas ${index + 1} fotos...`);
   }
@@ -101,6 +128,8 @@ async function processPhoto(filename: string, index: number): Promise<PhotoGalle
     height: result.height,
     bytes: result.size,
     pathname,
+    thumbnailBytes: thumbnailResult.size,
+    thumbnailPathname,
   };
 }
 
@@ -126,15 +155,12 @@ async function uploadPhotos(photos: PhotoGalleryPhoto[]) {
   let uploaded = 0;
   let skipped = 0;
 
-  await mapWithConcurrency(photos, 4, async (photo) => {
-    if (existing.has(photo.pathname)) {
+  async function upload(pathname: string, filePath: string) {
+    if (existing.has(pathname)) {
       skipped++;
       return;
     }
-
-    const config = CAMERA_CONFIG[photo.camera];
-    const filePath = path.join(CACHE_DIRECTORY, config.slug, `${photo.id.split('-').at(-1)}.jpg`);
-    await put(photo.pathname, await readFile(filePath), {
+    await put(pathname, await readFile(filePath), {
       access: 'private',
       contentType: 'image/jpeg',
       cacheControlMaxAge: 31_536_000,
@@ -144,6 +170,16 @@ async function uploadPhotos(photos: PhotoGalleryPhoto[]) {
     if (uploaded % 50 === 0 || uploaded === 1) {
       console.log(`Enviadas ${uploaded} fotos ao Blob...`);
     }
+  }
+
+  await mapWithConcurrency(photos, 4, async (photo) => {
+    const config = CAMERA_CONFIG[photo.camera];
+    const filename = `${photo.id.split('-').at(-1)}.jpg`;
+    await upload(photo.pathname, path.join(CACHE_DIRECTORY, config.slug, filename));
+    await upload(
+      photo.thumbnailPathname,
+      path.join(CACHE_DIRECTORY, 'thumbnails', config.slug, filename),
+    );
   });
 
   console.log(`Upload concluído: ${uploaded} novas, ${skipped} já existentes.`);
@@ -194,7 +230,10 @@ async function main() {
   await mkdir(CACHE_DIRECTORY, { recursive: true });
   const photos = await mapWithConcurrency(filenames, 4, processPhoto);
   const sections = buildSections(photos);
-  const totalBytes = photos.reduce((sum, photo) => sum + photo.bytes, 0);
+  const totalBytes = photos.reduce(
+    (sum, photo) => sum + photo.bytes + photo.thumbnailBytes,
+    0,
+  );
 
   if (totalBytes > MAX_TOTAL_BYTES) {
     throw new Error(

@@ -85,8 +85,11 @@ function midpoint(first: PointerPosition, second: PointerPosition): PointerPosit
   };
 }
 
-function mediaUrl(photoId: string, retry = 0): string {
-  return `/api/photos?action=media&id=${encodeURIComponent(photoId)}${retry ? `&retry=${retry}` : ''}`;
+function mediaUrl(photoId: string, retry = 0, variant: 'full' | 'thumbnail' = 'full'): string {
+  const params = new URLSearchParams({ action: 'media', id: photoId });
+  if (variant === 'thumbnail') params.set('variant', variant);
+  if (retry) params.set('retry', String(retry));
+  return `/api/photos?${params.toString()}`;
 }
 
 function calculateRows(
@@ -143,7 +146,7 @@ const GalleryImage: React.FC<{
       aria-label={`Abrir ${photo.filename}`}
     >
       <img
-        src={mediaUrl(photo.id, retry)}
+        src={mediaUrl(photo.id, retry, 'thumbnail')}
         alt="Foto do casamento de Yosha e Mark"
         width={photo.width}
         height={photo.height}
