@@ -16,6 +16,7 @@ import {
   RefreshCw,
   X,
 } from 'lucide-react';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 interface GalleryPhoto {
   id: string;
@@ -47,6 +48,42 @@ interface JustifiedRow {
 
 const BATCH_SIZE = 80;
 const GAP = 6;
+const MAX_ZOOM = 4;
+const DOUBLE_TAP_ZOOM = 2.5;
+const SWIPE_DISTANCE = 50;
+
+interface ImageTransform {
+  scale: number;
+  x: number;
+  y: number;
+}
+
+interface PointerPosition {
+  x: number;
+  y: number;
+}
+
+interface GestureState {
+  mode: 'idle' | 'swipe' | 'pan' | 'pinch';
+  startPoint: PointerPosition;
+  startTransform: ImageTransform;
+  hadMultiplePointers: boolean;
+  pinchDistance: number;
+  pinchMidpoint: PointerPosition;
+}
+
+const RESET_TRANSFORM: ImageTransform = { scale: 1, x: 0, y: 0 };
+
+function distanceBetween(first: PointerPosition, second: PointerPosition): number {
+  return Math.hypot(second.x - first.x, second.y - first.y);
+}
+
+function midpoint(first: PointerPosition, second: PointerPosition): PointerPosition {
+  return {
+    x: (first.x + second.x) / 2,
+    y: (first.y + second.y) / 2,
+  };
+}
 
 function mediaUrl(photoId: string, retry = 0): string {
   return `/api/photos?action=media&id=${encodeURIComponent(photoId)}${retry ? `&retry=${retry}` : ''}`;
@@ -221,29 +258,95 @@ const JustifiedGallery: React.FC<{
 
 const PhotoLightbox: React.FC<{
   photos: GalleryPhoto[];
-  initialIndex: number;
+  index: number;
+  onIndexChange: (index: number) => void;
   onClose: () => void;
-}> = ({ photos, initialIndex, onClose }) => {
-  const [index, setIndex] = useState(initialIndex);
+}> = ({ photos, index, onIndexChange, onClose }) => {
   const [retry, setRetry] = useState(0);
   const [failed, setFailed] = useState(false);
-  const touchStart = useRef<number | null>(null);
+  const [transform, setTransform] = useState<ImageTransform>(RESET_TRANSFORM);
+  const stageRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const pointers = useRef<Map<number, PointerPosition>>(new Map());
+  const transformRef = useRef<ImageTransform>(RESET_TRANSFORM);
+  const lastTap = useRef<{ time: number; point: PointerPosition } | null>(null);
+  const gesture = useRef<GestureState>({
+    mode: 'idle',
+    startPoint: { x: 0, y: 0 },
+    startTransform: RESET_TRANSFORM,
+    hadMultiplePointers: false,
+    pinchDistance: 0,
+    pinchMidpoint: { x: 0, y: 0 },
+  });
   const current = photos[index];
+
+  const applyTransform = useCallback((next: ImageTransform) => {
+    transformRef.current = next;
+    setTransform(next);
+  }, []);
+
+  const clampTransform = useCallback((next: ImageTransform): ImageTransform => {
+    const stage = stageRef.current;
+    const image = imageRef.current;
+    if (!stage || !image || next.scale <= 1) return RESET_TRANSFORM;
+
+    const maxX = Math.max(0, (image.clientWidth * next.scale - stage.clientWidth) / 2);
+    const maxY = Math.max(0, (image.clientHeight * next.scale - stage.clientHeight) / 2);
+    return {
+      scale: next.scale,
+      x: Math.max(-maxX, Math.min(maxX, next.x)),
+      y: Math.max(-maxY, Math.min(maxY, next.y)),
+    };
+  }, []);
+
+  const zoomAroundPoint = useCallback(
+    (scale: number, point: PointerPosition, initial = transformRef.current) => {
+      const stage = stageRef.current;
+      if (!stage || scale <= 1) {
+        applyTransform(RESET_TRANSFORM);
+        return;
+      }
+
+      const bounds = stage.getBoundingClientRect();
+      const relativePoint = {
+        x: point.x - bounds.left - bounds.width / 2,
+        y: point.y - bounds.top - bounds.height / 2,
+      };
+      const ratio = scale / initial.scale;
+      applyTransform(
+        clampTransform({
+          scale,
+          x: relativePoint.x - (relativePoint.x - initial.x) * ratio,
+          y: relativePoint.y - (relativePoint.y - initial.y) * ratio,
+        }),
+      );
+    },
+    [applyTransform, clampTransform],
+  );
 
   const goPrevious = useCallback(() => {
     setFailed(false);
     setRetry(0);
-    setIndex((value) => (value === 0 ? photos.length - 1 : value - 1));
-  }, [photos.length]);
+    onIndexChange(index === 0 ? photos.length - 1 : index - 1);
+  }, [index, onIndexChange, photos.length]);
 
   const goNext = useCallback(() => {
     setFailed(false);
     setRetry(0);
-    setIndex((value) => (value === photos.length - 1 ? 0 : value + 1));
-  }, [photos.length]);
+    onIndexChange(index === photos.length - 1 ? 0 : index + 1);
+  }, [index, onIndexChange, photos.length]);
 
   useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
+    closeButtonRef.current?.focus();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
+  useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
       if (event.key === 'ArrowLeft') goPrevious();
@@ -251,10 +354,22 @@ const PhotoLightbox: React.FC<{
     };
     window.addEventListener('keydown', onKeyDown);
     return () => {
-      document.body.style.overflow = '';
       window.removeEventListener('keydown', onKeyDown);
     };
   }, [goNext, goPrevious, onClose]);
+
+  useEffect(() => {
+    pointers.current.clear();
+    gesture.current.mode = 'idle';
+    lastTap.current = null;
+    applyTransform(RESET_TRANSFORM);
+  }, [applyTransform, current.id]);
+
+  useEffect(() => {
+    const handleResize = () => applyTransform(clampTransform(transformRef.current));
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [applyTransform, clampTransform]);
 
   useEffect(() => {
     const adjacent = [
@@ -267,6 +382,149 @@ const PhotoLightbox: React.FC<{
     });
   }, [index, photos]);
 
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (
+      event.pointerType === 'mouse' ||
+      (event.target as HTMLElement).closest('button, a')
+    ) {
+      return;
+    }
+    event.currentTarget.setPointerCapture(event.pointerId);
+    const point = { x: event.clientX, y: event.clientY };
+    pointers.current.set(event.pointerId, point);
+
+    if (pointers.current.size === 1) {
+      gesture.current = {
+        mode: transformRef.current.scale > 1 ? 'pan' : 'swipe',
+        startPoint: point,
+        startTransform: transformRef.current,
+        hadMultiplePointers: false,
+        pinchDistance: 0,
+        pinchMidpoint: point,
+      };
+      return;
+    }
+
+    const [first, second] = Array.from(pointers.current.values()) as [
+      PointerPosition,
+      PointerPosition,
+    ];
+    gesture.current.mode = 'pinch';
+    gesture.current.hadMultiplePointers = true;
+    gesture.current.startTransform = transformRef.current;
+    gesture.current.pinchDistance = distanceBetween(first, second);
+    gesture.current.pinchMidpoint = midpoint(first, second);
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!pointers.current.has(event.pointerId)) return;
+    const point = { x: event.clientX, y: event.clientY };
+    pointers.current.set(event.pointerId, point);
+
+    if (pointers.current.size >= 2 && gesture.current.mode === 'pinch') {
+      const [first, second] = Array.from(pointers.current.values()) as [
+        PointerPosition,
+        PointerPosition,
+      ];
+      const currentDistance = distanceBetween(first, second);
+      if (gesture.current.pinchDistance === 0) return;
+
+      const scale = Math.max(
+        1,
+        Math.min(
+          MAX_ZOOM,
+          gesture.current.startTransform.scale *
+            (currentDistance / gesture.current.pinchDistance),
+        ),
+      );
+      const currentMidpoint = midpoint(first, second);
+      const stage = stageRef.current;
+      if (!stage) return;
+      const bounds = stage.getBoundingClientRect();
+      const startMidpoint = {
+        x: gesture.current.pinchMidpoint.x - bounds.left - bounds.width / 2,
+        y: gesture.current.pinchMidpoint.y - bounds.top - bounds.height / 2,
+      };
+      const movedMidpoint = {
+        x: currentMidpoint.x - bounds.left - bounds.width / 2,
+        y: currentMidpoint.y - bounds.top - bounds.height / 2,
+      };
+      const ratio = scale / gesture.current.startTransform.scale;
+      applyTransform(
+        clampTransform({
+          scale,
+          x:
+            movedMidpoint.x -
+            (startMidpoint.x - gesture.current.startTransform.x) * ratio,
+          y:
+            movedMidpoint.y -
+            (startMidpoint.y - gesture.current.startTransform.y) * ratio,
+        }),
+      );
+      return;
+    }
+
+    if (pointers.current.size === 1 && gesture.current.mode === 'pan') {
+      applyTransform(
+        clampTransform({
+          ...gesture.current.startTransform,
+          x: gesture.current.startTransform.x + point.x - gesture.current.startPoint.x,
+          y: gesture.current.startTransform.y + point.y - gesture.current.startPoint.y,
+        }),
+      );
+    }
+  };
+
+  const finishPointer = (event: React.PointerEvent<HTMLDivElement>, cancelled = false) => {
+    const point = { x: event.clientX, y: event.clientY };
+    const state = gesture.current;
+    const wasLastPointer = pointers.current.size === 1;
+    const movedX = point.x - state.startPoint.x;
+    const movedY = point.y - state.startPoint.y;
+    const isTap = Math.hypot(movedX, movedY) < 12;
+
+    if (
+      !cancelled &&
+      wasLastPointer &&
+      state.mode === 'swipe' &&
+      !state.hadMultiplePointers &&
+      Math.abs(movedX) >= SWIPE_DISTANCE &&
+      Math.abs(movedX) > Math.abs(movedY) * 1.2
+    ) {
+      if (movedX > 0) goPrevious();
+      else goNext();
+    } else if (!cancelled && wasLastPointer && isTap && !state.hadMultiplePointers) {
+      const now = performance.now();
+      const previousTap = lastTap.current;
+      if (
+        previousTap &&
+        now - previousTap.time < 300 &&
+        distanceBetween(previousTap.point, point) < 32
+      ) {
+        if (transformRef.current.scale > 1) applyTransform(RESET_TRANSFORM);
+        else zoomAroundPoint(DOUBLE_TAP_ZOOM, point);
+        lastTap.current = null;
+      } else {
+        lastTap.current = { time: now, point };
+      }
+    }
+
+    pointers.current.delete(event.pointerId);
+    if (pointers.current.size === 1) {
+      const remainingPoint = Array.from(pointers.current.values())[0] as PointerPosition;
+      gesture.current.mode = transformRef.current.scale > 1 ? 'pan' : 'idle';
+      gesture.current.startPoint = remainingPoint;
+      gesture.current.startTransform = transformRef.current;
+      gesture.current.hadMultiplePointers = true;
+      return;
+    }
+
+    if (pointers.current.size === 0) {
+      gesture.current.mode = 'idle';
+      if (transformRef.current.scale <= 1) applyTransform(RESET_TRANSFORM);
+    }
+  };
+
   return (
     <div
       className="fixed inset-0 z-[80] flex flex-col text-white"
@@ -274,16 +532,6 @@ const PhotoLightbox: React.FC<{
       role="dialog"
       aria-modal="true"
       aria-label="Visualização da foto"
-      onTouchStart={(event) => {
-        touchStart.current = event.touches[0].clientX;
-      }}
-      onTouchEnd={(event) => {
-        if (touchStart.current === null) return;
-        const distance = event.changedTouches[0].clientX - touchStart.current;
-        if (distance > 50) goPrevious();
-        if (distance < -50) goNext();
-        touchStart.current = null;
-      }}
     >
       <div className="flex h-16 shrink-0 items-center justify-between px-4 md:px-7">
         <p className="text-sm tracking-[0.16em] text-white/70">
@@ -298,6 +546,7 @@ const PhotoLightbox: React.FC<{
             <Download className="h-5 w-5" />
           </a>
           <button
+            ref={closeButtonRef}
             type="button"
             onClick={onClose}
             className="rounded-full p-3 text-white/80 transition hover:bg-white/10 hover:text-white"
@@ -308,7 +557,14 @@ const PhotoLightbox: React.FC<{
         </div>
       </div>
 
-      <div className="relative flex min-h-0 flex-1 items-center justify-center px-3 pb-5 md:px-20">
+      <div
+        ref={stageRef}
+        className="relative flex min-h-0 flex-1 touch-none items-center justify-center overflow-hidden px-3 pb-5 md:px-20"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={(event) => finishPointer(event)}
+        onPointerCancel={(event) => finishPointer(event, true)}
+      >
         <button
           type="button"
           onClick={goPrevious}
@@ -332,6 +588,7 @@ const PhotoLightbox: React.FC<{
           </button>
         ) : (
           <img
+            ref={imageRef}
             key={`${current.id}-${retry}`}
             src={mediaUrl(current.id, retry)}
             alt="Foto do casamento de Yosha e Mark"
@@ -339,7 +596,11 @@ const PhotoLightbox: React.FC<{
             height={current.height}
             decoding="async"
             onError={() => setFailed(true)}
-            className="max-h-full max-w-full select-none object-contain shadow-2xl"
+            className="max-h-full max-w-full select-none object-contain shadow-2xl will-change-transform"
+            style={{
+              transform: `translate3d(${transform.x}px, ${transform.y}px, 0) scale(${transform.scale})`,
+              transition: gesture.current.mode === 'idle' ? 'transform 180ms ease-out' : 'none',
+            }}
             draggable={false}
           />
         )}
@@ -356,7 +617,7 @@ const PhotoLightbox: React.FC<{
 
       <div className="shrink-0 pb-5 text-center md:hidden">
         <p className="text-xs uppercase tracking-[0.18em] text-white/45">
-          Deslize para navegar
+          Deslize para navegar · pinça ou toque duas vezes para ampliar
         </p>
       </div>
     </div>
@@ -364,13 +625,16 @@ const PhotoLightbox: React.FC<{
 };
 
 const FotosPage: React.FC = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [status, setStatus] = useState<'checking' | 'login' | 'loading' | 'ready' | 'error'>(
     'checking',
   );
   const [password, setPassword] = useState('');
   const [message, setMessage] = useState('');
   const [manifest, setManifest] = useState<GalleryManifest | null>(null);
-  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const lastFocusedElement = useRef<HTMLElement | null>(null);
+  const wasLightboxOpen = useRef(false);
 
   const loadManifest = useCallback(async () => {
     setStatus('loading');
@@ -408,6 +672,83 @@ const FotosPage: React.FC = () => {
     () => new Map(allPhotos.map((photo, index) => [photo.id, index])),
     [allPhotos],
   );
+  const selectedPhotoId = useMemo(
+    () => new URLSearchParams(location.search).get('foto'),
+    [location.search],
+  );
+  const lightboxIndex = selectedPhotoId ? photoIndex.get(selectedPhotoId) ?? null : null;
+
+  const navigateToPhoto = useCallback(
+    (photoId: string, replace: boolean) => {
+      const search = new URLSearchParams(location.search);
+      search.set('foto', photoId);
+      const existingState =
+        location.state && typeof location.state === 'object' ? location.state : {};
+      const nextState = replace
+        ? location.state
+        : { ...existingState, photoLightbox: true };
+      navigate(
+        { pathname: location.pathname, search: `?${search.toString()}` },
+        {
+          replace,
+          preventScrollReset: true,
+          state: nextState,
+        },
+      );
+    },
+    [location.pathname, location.search, location.state, navigate],
+  );
+
+  const openPhoto = useCallback(
+    (photo: GalleryPhoto) => {
+      lastFocusedElement.current = document.activeElement as HTMLElement | null;
+      navigateToPhoto(photo.id, false);
+    },
+    [navigateToPhoto],
+  );
+
+  const changePhoto = useCallback(
+    (nextIndex: number) => {
+      const photo = allPhotos[nextIndex];
+      if (photo) navigateToPhoto(photo.id, true);
+    },
+    [allPhotos, navigateToPhoto],
+  );
+
+  const closeLightbox = useCallback(() => {
+    const state = location.state as { photoLightbox?: boolean } | null;
+    if (state?.photoLightbox) {
+      navigate(-1);
+      return;
+    }
+
+    const search = new URLSearchParams(location.search);
+    search.delete('foto');
+    navigate(
+      { pathname: location.pathname, search: search.toString() ? `?${search.toString()}` : '' },
+      { replace: true, preventScrollReset: true },
+    );
+  }, [location.pathname, location.search, location.state, navigate]);
+
+  useEffect(() => {
+    if (status !== 'ready' || !selectedPhotoId || photoIndex.has(selectedPhotoId)) return;
+    const search = new URLSearchParams(location.search);
+    search.delete('foto');
+    navigate(
+      { pathname: location.pathname, search: search.toString() ? `?${search.toString()}` : '' },
+      { replace: true, preventScrollReset: true },
+    );
+  }, [location.pathname, location.search, navigate, photoIndex, selectedPhotoId, status]);
+
+  useEffect(() => {
+    const isOpen = lightboxIndex !== null;
+    if (wasLightboxOpen.current && !isOpen) {
+      const element = lastFocusedElement.current;
+      window.requestAnimationFrame(() => element?.focus());
+      lastFocusedElement.current = null;
+    }
+    wasLightboxOpen.current = isOpen;
+  }, [lightboxIndex]);
 
   const handleLogin = async (event: FormEvent) => {
     event.preventDefault();
@@ -571,7 +912,7 @@ const FotosPage: React.FC = () => {
             </div>
             <JustifiedGallery
               photos={section.photos}
-              onOpen={(photo) => setLightboxIndex(photoIndex.get(photo.id) ?? null)}
+              onOpen={openPhoto}
             />
           </section>
         ))}
@@ -607,8 +948,9 @@ const FotosPage: React.FC = () => {
       {lightboxIndex !== null && (
         <PhotoLightbox
           photos={allPhotos}
-          initialIndex={lightboxIndex}
-          onClose={() => setLightboxIndex(null)}
+          index={lightboxIndex}
+          onIndexChange={changePhoto}
+          onClose={closeLightbox}
         />
       )}
     </div>

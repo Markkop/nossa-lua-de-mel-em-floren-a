@@ -6,6 +6,7 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { SignJWT, jwtVerify } from 'jose';
 
 import manifest from '../data/photo-gallery-manifest.js';
+import type { PhotoGalleryPhoto } from '../data/photo-gallery-types.js';
 
 const COOKIE_NAME = 'photo_gallery_session';
 const SESSION_SECONDS = 7 * 24 * 60 * 60;
@@ -13,6 +14,7 @@ const GALLERY_PASSWORD = 'tudolindo';
 const photoById = new Map(
   manifest.sections.flatMap((section) => section.photos).map((photo) => [photo.id, photo]),
 );
+const coverPhoto = manifest.sections.flatMap((section) => section.photos)[0];
 
 function getJwtSecret(): Uint8Array {
   const secret = process.env.PHOTO_GALLERY_JWT_SECRET;
@@ -82,6 +84,41 @@ async function requireSession(request: FastifyRequest, reply: FastifyReply): Pro
   return false;
 }
 
+async function sendPhoto(
+  request: FastifyRequest,
+  reply: FastifyReply,
+  photo: PhotoGalleryPhoto,
+  options: { publicCache?: boolean; download?: boolean } = {},
+) {
+  const result = await get(photo.pathname, {
+    access: 'private',
+    ifNoneMatch:
+      typeof request.headers['if-none-match'] === 'string'
+        ? request.headers['if-none-match']
+        : undefined,
+  });
+
+  if (!result) return reply.code(404).send({ error: 'Arquivo indisponível.' });
+
+  reply
+    .header('ETag', result.blob.etag)
+    .header(
+      'Cache-Control',
+      options.publicCache ? 'public, max-age=3600, s-maxage=86400' : 'private, no-cache',
+    )
+    .header('X-Content-Type-Options', 'nosniff');
+
+  if (result.statusCode === 304) return reply.code(304).send();
+
+  reply.header('Content-Type', result.blob.contentType);
+  reply.header('Content-Length', result.blob.size);
+  if (options.download) {
+    reply.header('Content-Disposition', `attachment; filename="${photo.filename}"`);
+  }
+
+  return reply.send(Readable.fromWeb(result.stream as never));
+}
+
 export async function registerPhotoGalleryRoutes(app: FastifyInstance) {
   app.get<{ Querystring: { action?: string; id?: string; download?: string } }>(
     '/api/photos',
@@ -90,6 +127,11 @@ export async function registerPhotoGalleryRoutes(app: FastifyInstance) {
 
       if (action === 'session') {
         return { authenticated: await hasValidSession(request) };
+      }
+
+      if (action === 'cover') {
+        if (!coverPhoto) return reply.code(404).send({ error: 'Capa indisponível.' });
+        return sendPhoto(request, reply, coverPhoto, { publicCache: true });
       }
 
       if (!(await requireSession(request, reply))) return;
@@ -121,30 +163,7 @@ export async function registerPhotoGalleryRoutes(app: FastifyInstance) {
       const photo = photoById.get(id);
       if (!photo) return reply.code(404).send({ error: 'Foto não encontrada.' });
 
-      const result = await get(photo.pathname, {
-        access: 'private',
-        ifNoneMatch:
-          typeof request.headers['if-none-match'] === 'string'
-            ? request.headers['if-none-match']
-            : undefined,
-      });
-
-      if (!result) return reply.code(404).send({ error: 'Arquivo indisponível.' });
-
-      reply
-        .header('ETag', result.blob.etag)
-        .header('Cache-Control', 'private, no-cache')
-        .header('X-Content-Type-Options', 'nosniff');
-
-      if (result.statusCode === 304) return reply.code(304).send();
-
-      reply.header('Content-Type', result.blob.contentType);
-      reply.header('Content-Length', result.blob.size);
-      if (request.query.download === '1') {
-        reply.header('Content-Disposition', `attachment; filename="${photo.filename}"`);
-      }
-
-      return reply.send(Readable.fromWeb(result.stream as never));
+      return sendPhoto(request, reply, photo, { download: request.query.download === '1' });
     },
   );
 
