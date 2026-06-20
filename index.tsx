@@ -10,6 +10,7 @@ import GamePage from './pages/GamePage';
 import PixRecipientPage from './pages/PixRecipientPage';
 import FotosPage from './pages/FotosPage';
 import WeddingSitePlansPage from './pages/WeddingSitePlansPage';
+import TopBar from './components/TopBar';
 
 /**
  * Detects which subdomain we're on to render the appropriate page.
@@ -65,6 +66,7 @@ const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
     <BrowserRouter>
+      <TopBar />
       <SubdomainRouter />
     </BrowserRouter>
   </React.StrictMode>
