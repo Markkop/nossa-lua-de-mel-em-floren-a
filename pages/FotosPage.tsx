@@ -590,6 +590,18 @@ const FotosPage: React.FC = () => {
             Natacha Jaques Fotografia
           </a>
         </p>
+        <p className="mt-4 text-xs uppercase tracking-[0.2em] text-white/55">
+          Quer um site de casamento personalizado,
+          <span className="block">sem taxa sobre presentes e dentro do orçamento?</span>
+          <a
+            href="https://wa.me/5548996792216"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-2 block text-[#e6d5c3] underline decoration-[#e6d5c3]/35 underline-offset-4 transition hover:text-white"
+          >
+            Entre em contato!
+          </a>
+        </p>
       </footer>
 
       {lightboxIndex !== null && (

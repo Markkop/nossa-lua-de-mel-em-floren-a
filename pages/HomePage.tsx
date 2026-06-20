@@ -89,6 +89,18 @@ const HomePage: React.FC = () => {
         <div className="max-w-2xl mx-auto">
           <p className="text-4xl md:text-5xl font-serif mb-6 text-[#e6d5c3]">Com amor,</p>
           <p className="text-2xl font-serif italic opacity-80">Yosha & Mark</p>
+          <p className="mt-8 text-xs uppercase tracking-[0.2em] text-white/55">
+            Quer um site de casamento personalizado,
+            <span className="block">sem taxa sobre presentes e dentro do orçamento?</span>
+            <a
+              href="https://wa.me/5548996792216"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-2 block text-[#e6d5c3] underline decoration-[#e6d5c3]/35 underline-offset-4 transition hover:text-white"
+            >
+              Entre em contato!
+            </a>
+          </p>
         </div>
       </footer>
     </div>
